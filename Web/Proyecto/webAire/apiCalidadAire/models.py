@@ -44,6 +44,7 @@ class MER_NORM(models.Model):
     hora = models.IntegerField()
     minutos = models.IntegerField()
     traffic = models.DecimalField(max_digits=13, decimal_places=12)
+    
 
 class UIZ_NORM(models.Model):
     idData = models.AutoField(primary_key=True)
