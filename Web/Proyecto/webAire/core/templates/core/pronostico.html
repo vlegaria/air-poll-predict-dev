@@ -1,5 +1,15 @@
 {% extends 'core/base.html' %}
+
 {% block title %}Pronostico{% endblock %}
+
+{%block background%}{%load static%}{%static 'core/img/about-bg.jpg'%}{%endblock%}
+
+{%block headers%}
+<h1> Estado del Aire </h1>
+<span class="subheading">Pryecto del estado del Aire</span>
+{%endblock%}
+
 {% block content %}
 <h1> Pronostico </h1> 
+<p>Cada modelo es entrenado con los datos de su respectiva estación de monitoreo atmosférica. Para información específica del modelo, seleccione la estación</p>
 {% endblock %}
