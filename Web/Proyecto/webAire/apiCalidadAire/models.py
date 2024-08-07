@@ -19,8 +19,8 @@ class PED_NORM(models.Model):
     WSP = models.DecimalField(max_digits=13, decimal_places=12)
     year = models.IntegerField()
     day = models.IntegerField()
-    hora = models.IntegerField()
-    minutos = models.IntegerField()
+    hour = models.IntegerField()
+    minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=13, decimal_places=12)
 
 
@@ -41,8 +41,8 @@ class MER_NORM(models.Model):
     WSP = models.DecimalField(max_digits=13, decimal_places=12)
     year = models.IntegerField()
     day = models.IntegerField()
-    hora = models.IntegerField()
-    minutos = models.IntegerField()
+    hour = models.IntegerField()
+    minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=13, decimal_places=12)
     
 
@@ -63,6 +63,6 @@ class UIZ_NORM(models.Model):
     WSP = models.DecimalField(max_digits=13, decimal_places=12)
     year = models.IntegerField()
     day = models.IntegerField()
-    hora = models.IntegerField()
-    minutos = models.IntegerField()
+    hour = models.IntegerField()
+    minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=13, decimal_places=12)
