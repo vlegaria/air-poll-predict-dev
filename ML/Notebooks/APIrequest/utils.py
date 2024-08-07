@@ -53,7 +53,7 @@ def nearest_street_request(stations2forecast,printData):
                         'NO2': data_openweather.get('list')[0].get('components').get('no2'),
                         'O3': data_openweather.get('list')[0].get('components').get('o3'),
                         'SO2': data_openweather.get('list')[0].get('components').get('so2'),
-                        'PM2_5': data_openweather.get('list')[0].get('components').get('pm2_5'),
+                        'PM25': data_openweather.get('list')[0].get('components').get('pm2_5'),
                         'PM10': data_openweather.get('list')[0].get('components').get('pm10'),
                         }
                     otro_intento = False
@@ -73,7 +73,7 @@ def nearest_street_request(stations2forecast,printData):
                     if printData:
                         print(data_openweather)
                     new_row3 = {
-                        'TEMP': data_openweather.get('main').get('temp'),
+                        'TMP': data_openweather.get('main').get('temp'),
                         'RH': data_openweather.get('main').get('humidity'),
                         'WSP': data_openweather.get('wind').get('speed'),
                         'WDR': data_openweather.get('wind').get('deg'),
@@ -88,6 +88,9 @@ def nearest_street_request(stations2forecast,printData):
             datetime_now = datetime.now()
             date = datetime_now.strftime('%Y-%m-%d')
             timestamp = datetime_now.strftime('%H:%M:%S')
+            #year
+            #day
+            #month
             hour = str(datetime_now.hour)
             minute= str(datetime_now.minute)
             new_row['date'] = date

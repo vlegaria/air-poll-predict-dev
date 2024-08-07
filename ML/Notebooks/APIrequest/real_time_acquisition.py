@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from utils_TomTom import *
+from utils import *
 
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 
