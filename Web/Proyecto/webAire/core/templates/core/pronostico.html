@@ -1,15 +1,65 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Pronostico{% endblock %}
+{% block title %}Pronóstico{% endblock %}
 
-{%block background%}{%load static%}{%static 'core/img/about-bg.jpg'%}{%endblock%}
+{% block background %}
+{% load static %}
+{% static 'core/img/home-bg.jpg' %}
+{% endblock %}
 
-{%block headers%}
-<h1> Estado del Aire </h1>
-<span class="subheading">Pryecto del estado del Aire</span>
-{%endblock%}
+{% block headers %}
+<h1> Pronóstico de calidad del aire CDMX </h1>
+<span class="subheading">Proyecto del estado del aire</span>
+{% endblock %}
 
 {% block content %}
-<h1> Pronostico </h1> 
-<p>Cada modelo es entrenado con los datos de su respectiva estación de monitoreo atmosférica. Para información específica del modelo, seleccione la estación</p>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="contaminante">Contaminante:</label>
+                        <select id="contaminante" class="form-control">
+                            <option>Ozono</option>
+                            <!-- Añade más opciones si es necesario -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dia">Día:</label>
+                        <input type="date" id="dia" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="hora">Hora:</label>
+                        <input type="time" id="hora" class="form-control" value="00:00">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" id="pronosticar">Pronosticar</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="intervalo">Intervalo de tiempo:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="intervalo" id="1hora" value="1">
+                            <label class="form-check-label" for="1hora">1 hora</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="intervalo" id="24horas" value="24">
+                            <label class="form-check-label" for="24horas">24 horas</label>
+                        </div>
+                    </div>
+                    <div class="map-container">
+                        <img src="{% static 'core/img/mapa-cdmx.png' %}" class="img-fluid" alt="Mapa CDMX">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="alert alert-info mt-3" role="alert">
+                Recomendaciones para la estación PED: La calidad del aire es buena. Se puede realizar cualquier actividad al aire libre.
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
