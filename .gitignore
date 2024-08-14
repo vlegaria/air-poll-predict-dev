@@ -1,0 +1,6 @@
+*.env
+**__pycache__/
+mlruns/
+mlartifacts/
+ML/Modelos/
+ML/Notebooks/config/__pycache__/
