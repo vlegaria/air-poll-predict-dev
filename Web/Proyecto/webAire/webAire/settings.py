@@ -141,5 +141,3 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-print(BASE_DIR,"hola esta la base")
