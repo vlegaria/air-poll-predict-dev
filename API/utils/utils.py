@@ -95,12 +95,11 @@ def nearest_street_request(stations2forecast,printData):
     return
 
 def get_hourly_averages(stations2forecast):
-    df_stations = pd.read_csv('estacionesCAMEcsv.csv')
     for station in stations2forecast:
         engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
         esquema = 'public'
         # Recuperar los datos y cargar en un DataFrame
-        table_name = 'apicalidadaire_'+station+'_norm'
+        table_name = 'apicalidadaire_'+station+'_m'
         query = f"SELECT * FROM {esquema}.{table_name};"
         df = pd.read_sql_query(query, engine)
         df['datetime'] = pd.to_datetime(
