@@ -1,14 +1,10 @@
 $(document).ready(function(){
     $('#pronosticar').click(function(e){
         var contaminante = $('#contaminante').val();
-        var dia = $('#dia').val();
-        var hora = $('#hora').val();
         var prediccion1 = $('#1hora').is(':checked');
         var prediccion24 = $('#24horas').is(':checked');
 
         console.log("contaminante: " + contaminante)
-        console.log("dia: " + dia)
-        console.log("hora: " + hora)
         console.log("prediccion1: " + prediccion1)
         console.log("prediccion24: " + prediccion24)
 
