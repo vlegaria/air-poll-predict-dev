@@ -120,7 +120,7 @@ STATIC_URL = '/static/'
 
 # Configuración para los archivos estáticos
 STATICFILES_DIRS = [
-    BASE_DIR / 'webAire/core/static',
+    BASE_DIR / 'Web/Proyecto/webAire/core/static',
 ]
 
 # Default primary key field type

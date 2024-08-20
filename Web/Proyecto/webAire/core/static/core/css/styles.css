@@ -1,52 +1,104 @@
-/* styles.css */
-/* sasdasds */
+/* Estilo para el cuerpo de la página */
 body {
-    background-image: url("{% static 'core/img/about-bg.jpg' %}");
     background-size: cover;
     background-position: center;
+    color: #fff; /* Asegura que el texto sea blanco */
+}
+
+/* Contenedor principal para el pronóstico */
+.forecast-container {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+}
+
+/* Contenedor para el formulario y el mapa */
+.form-map-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start; /* Asegura que los elementos estén alineados al inicio */
+    align-items: flex-start;
+    background-color: #6C1D45;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    flex-wrap: nowrap; /* Evita que los elementos se envuelvan */
+    color: #fff; /* Asegura que el texto dentro del contenedor sea blanco */
 }
 
 .form-container {
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 20px;
+    flex: 1;
+    max-width: 60%; /* Aumenta el ancho máximo del formulario */
+    margin-left: 10px; /* Reduce el margen izquierdo para acercar el formulario al mapa */
+    min-width: 250px; /* Asegura que el formulario tenga un ancho mínimo */
+}
+
+.map-container {
+    flex-shrink: 0;
+    width: 300px;
+    min-width: 200px; /* Asegura que el mapa tenga un ancho mínimo */
+}
+
+.map-container img {
+    max-width: 100%;
+    height: auto;
     border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
 }
 
-.form-container h1 {
-    text-align: center;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    font-weight: bold;
-}
-
-.form-group input,
-.form-group select,
-.form-group button {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-.form-check {
-    display: flex;
-    align-items: center;
-}
-
-.form-check input {
-    margin-right: 10px;
-}
-
-.alert {
+/* Contenedor para las alertas */
+.alert-container {
     margin-top: 20px;
 }
 
-.justified-text {
-    text-align: justify;
+/* Estilo para los puntos en el mapa */
+.marker {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background-color: red;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+/* Efecto hover para los marcadores */
+.marker:hover {
+    transform: scale(1.5);
+    background-color: yellow;
+}
+
+/* Posicionamiento de los marcadores en el mapa */
+.mer {
+    top: 29%; /* Ajusta según sea necesario */
+    left: 54%;
+}
+
+.ped {
+    top: 48%;
+    left: 35%;
+}
+
+.uiz {
+    top: 42%;
+    left: 65%;
+}
+
+/* Ajuste para el contenedor del mapa en tu diseño existente */
+.map-container {
+    position: relative;
+    width: 300px;
+    min-width: 200px;
+}
+
+.map-container img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
 }
