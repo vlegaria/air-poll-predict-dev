@@ -12,11 +12,13 @@ def prediccion(request):
 
     if request.method == 'POST':
         contaminante =  request.POST.get("contaminante")
-        print(contaminante)
         prediccion1 = request.POST.get("prediccion1")
-        print(prediccion1)
         prediccion24 = request.POST.get("prediccion24")
-        print(prediccion24)
+
+        #jsonResponse = Prediccion(contaminante,prediccion1,prediccion24)
+
+        #jsonResponse["nombre_estación"] 
+
 
         texto = f'Se recibio {contaminante}, {prediccion1}, {prediccion24}'
 

@@ -37,7 +37,7 @@ def create_sequences2(X, y, time_steps, time_future):
     ys.append(y[i + time_steps+time_future])
   return np.array(Xs), np.array(ys)
 
-def metrics(X, y_test, predicciones):
+def metrics(X, y_test, predicciones, printData):
     n = len(y_test)
     p = X.shape[1]
     # Coeficiente de determinación (R-cuadrado)
@@ -53,10 +53,10 @@ def metrics(X, y_test, predicciones):
     r2_adjusted = round(r2_adjusted, 6)
     rmse = round(rmse, 6)
     mae = round(mae, 6)
-
-    print("R^2:", r2)
-    print("R^2 ajustado:", r2_adjusted)
-    print("RMSE", rmse)
-    print("MAE:", mae)
+    if printData:
+      print("R^2:", r2)
+      print("R^2 ajustado:", r2_adjusted)
+      print("RMSE", rmse)
+      print("MAE:", mae)
     return {'r2':r2, 'r2adjusted':r2_adjusted,'rmse': rmse, 'mae':mae}
 
