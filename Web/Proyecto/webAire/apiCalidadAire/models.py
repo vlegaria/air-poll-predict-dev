@@ -111,7 +111,7 @@ class MER_15M(models.Model):
     WSP = models.DecimalField(max_digits=16, decimal_places=6)
     year = models.IntegerField()
     month = models.IntegerField(default='0')
-    day = models.IntegerField()
+    day = models.IntegerField(default='0')
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=16, decimal_places=6, default='0.00')
