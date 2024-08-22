@@ -13,6 +13,4 @@ MLFLOW_PROJECT = config('MLFLOW_PROJECT')
 MLFLOW_USER = config('MLFLOW_USER')
 MLFLOW_PWD = config('MLFLOW_PWD') 
 
-RUTA_MODELOS = config('RUTA_MODELOS')
-
 historical_data_1hrfuture = 24

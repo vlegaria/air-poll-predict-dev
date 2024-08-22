@@ -4,3 +4,6 @@ mlruns/
 mlartifacts/
 ML/Modelos/
 ML/Notebooks/config/__pycache__/
+.venv/
+
+Web/Proyecto/webAire/apicalidadaire/migrations/

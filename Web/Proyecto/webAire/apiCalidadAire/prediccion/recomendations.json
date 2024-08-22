@@ -1,0 +1,7 @@
+{
+    "Buena": {"texto":"Se puede realizar cualquier actividad al aire libre", "color":"#9ACA3C"},
+    "Regular": {"texto":"Las personas que son extremadamente suceptibles a la contaminación deben considerar limitar la exposición al aire libre", "color":"#F7EC0F"},
+    "Mala": {"texto":"Los niños, adultos mayores, personas que realizan actividad física intensa o con enfermedades respiratorias y cardiovasculares, deben evitar la exposición al aire libre y el resto de la población debe limitarse", "color":"#F8991D"},
+    "Muy mala": {"texto":"Toda la población debe evitar la exposición al aire libre", "color":"#ED2124"},
+    "Extremadamente mala" : {"texto":"Suspensión de actividades al aire libre", "color":"#7D287D"}
+}
