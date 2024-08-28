@@ -1,6 +1,7 @@
 from config.config import DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_PORT
 import pandas as pd
 from sqlalchemy import create_engine
+from sqlalchemy import text
 import numpy as np
 from sklearn.metrics import make_scorer, mean_squared_error, r2_score, mean_absolute_error
 
@@ -60,3 +61,48 @@ def metrics(X, y_test, predicciones, printData):
       print("MAE:", mae)
     return {'r2':r2, 'r2adjusted':r2_adjusted,'rmse': rmse, 'mae':mae}
 
+
+def selectStatus(Status):
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    # Recuperar los datos y cargar en un DataFrame
+    table_name = 'apicalidadaire_estatuscalidad'
+    query = f"SELECT * FROM {esquema}.{table_name} where \"idEstatus\" = {Status};"
+    return pd.read_sql_query(query, engine)
+
+def selectTarget(target):
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    # Recuperar los datos y cargar en un DataFrame
+    table_name = 'apicalidadaire_contaminantes'
+    query = f"SELECT \"Contaminante\" FROM {esquema}.{table_name} where \"idContaminante\" = {target};"
+    return pd.read_sql_query(query, engine)
+
+def selectUnit(unit):
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    # Recuperar los datos y cargar en un DataFrame
+    table_name = 'apicalidadaire_unidades'
+    query = f"SELECT \"descUnidad\" FROM {esquema}.{table_name} where \"idUnidad\" = {unit};"
+    return pd.read_sql_query(query, engine)
+
+def selectStation(station):
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    # Recuperar los datos y cargar en un DataFrame
+    table_name = 'apicalidadaire_estacionescame'
+    query = f"SELECT * FROM {esquema}.{table_name} where \"idEstacion\" = {station};"
+    return pd.read_sql_query(query, engine)
+
+def registerPrediction(idStation,idContaminante,valorContaminante,idUnidad,idEstatus):
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    table_name = 'apicalidadaire_prediccion'
+    query = f'INSERT INTO public.apicalidadaire_prediccion("Estacion_id", "Contaminante_id", "valorContaminante", "Unidad_id", "Estatus_id", "fechaPrediccion") VALUES ({idStation}, {idContaminante}, {valorContaminante}, {idUnidad}, {idEstatus}, CURRENT_TIMESTAMP );'
+
+    with engine.connect() as conn:
+       conn.execute(text(query))
+       conn.commit()
+
+    query = f"SELECT \"idPrediccion\" FROM {esquema}.{table_name} where \"Estacion_id\" = {idStation} and \"Contaminante_id\" = {idContaminante} and \"valorContaminante\" = {valorContaminante} and \"Unidad_id\" = {idUnidad} and \"Estatus_id\" = {idEstatus} ORDER BY \"fechaPrediccion\" DESC LIMIT 1;"
+    return pd.read_sql_query(query, engine)

@@ -3,17 +3,20 @@ import mlflow
 from mlflow.tracking import MlflowClient
 import mlflow.sklearn
 import mlflow.pyfunc
-from utils.utils import *
+from apicalidadaire.prediccion.utils.utils import *
 import json
 
 
-with open('recomendations.json', 'r') as archivo_json:
-    recomendations = json.load(archivo_json)
+#with open('apicalidadaire/prediccion/recomendations.json', 'r') as archivo_json:
+#    recomendations = json.load(archivo_json)
 
 mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
 client = MlflowClient()
 
-def prediction(station, time1hr, target):
+def prediction(idStation, time1hr, idTarget):
+
+    station = selectStation(idStation).loc[0, 'key']
+
     if time1hr:
         time_future = 1
     else:
@@ -25,7 +28,7 @@ def prediction(station, time1hr, target):
     best_model_version = best_model_info.version
     best_model_run_id = best_model_info.run_id
     station = station.upper()
-    target = 'O3'
+    target = selectTarget(idTarget).loc[0, 'Contaminante']
     time_steps = 24
     table_name = 'apicalidadaire_'+station+'_norm'
     X, y, df, dates = table_data(table_name, target, station)
@@ -40,26 +43,32 @@ def prediction(station, time1hr, target):
     norm_predictions = norm_predictions.reshape(-1, 1)
     predictions = scaler.inverse_transform(norm_predictions)
     ozone_value = round(float(predictions),4)
+
+    estatus = 0
     if ozone_value <= 51:
-        categorical_value = "Buena"
+        estatus = 1
     elif ozone_value > 51 and ozone_value <= 95:
-        categorical_value = "Regular"
+        estatus = 2
     elif ozone_value > 95 and ozone_value <= 135:
-        categorical_value = "Mala"
+        estatus = 3
     elif ozone_value > 135 and ozone_value <= 175:
-        categorical_value = "Muy mala"
+        estatus = 4
     else:
-        categorical_value = "Extremadamente mala"
+        estatus = 5
+
+    EstatusCalidad = selectStatus(estatus)
+    unidad = selectUnit(1).loc[0, 'descUnidad']
 
     print("The Ozone value for the next hour is", ozone_value, "ppb")
-    response = {"nombre_estacion": station.lower(),
-                "color_punto": recomendations[categorical_value]["color"], 
+    """response = {"nombre_estacion": station.lower(),
+                "color_punto": EstatusCalidad["valorColor"], 
                 "contaminante": "ozono",
                 "valor_contaminante": ozone_value, 
                 "unidad": "ppb", 
-                "recomendaciones": recomendations[categorical_value]["texto"]}
-    print(response)
+                "recomendaciones": recomendations[categorical_value]["texto"]}"""
     
-    return response
+    idPrediccion = registerPrediction(idStation,idTarget,ozone_value,1,estatus).loc[0, 'idPrediccion']
+    
+    return idPrediccion
 
-prediction("mer", True, "ozono")
+#prediction("mer", True, "ozono")

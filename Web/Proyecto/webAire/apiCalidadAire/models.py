@@ -232,3 +232,30 @@ class UIZ_PROM_HR(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=16, decimal_places=6,  default='0.00')
+
+class EstatusCalidad(models.Model):
+    idEstatus = models.AutoField(primary_key=True)
+    descEstatus = models.CharField(max_length=50)
+    recomendacion = models.CharField(max_length=100)
+    descColor = models.CharField(max_length=50)
+    valorColor = models.CharField(max_length=10)
+
+class Contaminantes(models.Model):
+    idContaminante = models.AutoField(primary_key=True)
+    Contaminante = models.CharField(max_length=50, default="")
+    descContaminante = models.CharField(max_length=50)
+
+class Unidades(models.Model):
+    idUnidad = models.AutoField(primary_key=True)
+    descUnidad = models.CharField(max_length=50)
+
+class Prediccion(models.Model):
+    idPrediccion = models.AutoField(primary_key=True)
+    Estacion =  models.ForeignKey(estacionesCAME, on_delete=models.CASCADE, blank=False, null=False)
+    Contaminante = models.ForeignKey(Contaminantes, on_delete=models.CASCADE, blank=False, null=False)
+    valorContaminante = models.DecimalField(max_digits=6, decimal_places=4)
+    Unidad = models.ForeignKey(Unidades, on_delete=models.CASCADE, blank=False, null=False)
+    Estatus = models.ForeignKey(EstatusCalidad, on_delete=models.CASCADE, blank=False, null=False)
+    fechaPrediccion = models.DateTimeField(auto_now_add=True)
+
+    

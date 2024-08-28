@@ -18,8 +18,6 @@ from django.contrib import admin
 from core import views  
 from django.urls import include, path
 
-from apicalidadaire import views as vapi
-
 urlpatterns = [
     path('', views.home, name="home"),
     path('pronostico/', views.pronostico, name="pronostico"),
