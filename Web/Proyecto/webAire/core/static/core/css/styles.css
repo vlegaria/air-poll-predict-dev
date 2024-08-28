@@ -62,17 +62,18 @@ body {
     position: absolute;
     width: 15px;
     height: 15px;
-    background-color: red;
+    background-color: gray;
     border-radius: 50%;
     cursor: pointer;
+    border: 1px solid black;
     transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
-/* Efecto hover para los marcadores */
+/* Efecto hover para los marcadores 
 .marker:hover {
     transform: scale(1.5);
     background-color: yellow;
-}
+}*/
 
 /* Posicionamiento de los marcadores en el mapa */
 .mer {

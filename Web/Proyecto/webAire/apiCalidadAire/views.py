@@ -24,6 +24,7 @@ class prediccion(APIView):
     def post(self, request, format=None):
         contaminante =  request.POST.get("contaminante")
         prediccion1 = request.POST.get("prediccion1")
+        estacion = request.POST.get("estacion")
 
         predictionSel = True
         if(prediccion1 == "True"):
@@ -31,7 +32,7 @@ class prediccion(APIView):
 
         try:
             #Prediccion mer
-            idPrediccion = prediction(27, predictionSel, contaminante)
+            idPrediccion = prediction(int(estacion), predictionSel, contaminante)
 
             prediccion = self.get_object(idPrediccion)
 

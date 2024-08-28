@@ -8,8 +8,8 @@
     <div class="form-map-container">
         <div class="map-container">
             <img src="{% static 'core/img/mapa-cdmx.png' %}" class="img-fluid" alt="Mapa CDMX">
-            <div class="marker mer" title="MER"></div>
-            <div class="marker uiz" title="UIZ"></div>
+            <div id = "mer" class="marker mer" title="MER"></div>
+            <div id = "uiz" class="marker uiz" title="UIZ"></div>
         </div>
         <div class="form-container">
             <form>
@@ -42,7 +42,9 @@
     </div>
     <div class="alert-container">
         <div class="alert alert-info mt-3" role="alert">
-            Recomendaciones para la estación PED: La calidad del aire es buena. Se puede realizar cualquier actividad al aire libre.
+            <div id="Estacion"> Estación </div><br>
+            <div id="Valorp">Valor pronosticado: </div>
+            <div id="Recomendacion">Recomendaciones: </div>
         </div>
     </div>
 </div>
