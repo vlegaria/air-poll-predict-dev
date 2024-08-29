@@ -31,6 +31,7 @@ $(document).ready(function(){
             pronostico = false; //Limpiamos la variable que indica si se pronostico algo
             //Limpiamos valores para nueva prediccion
             $('#mer').css("background-color", "gray")
+            $('#uiz').css("background-color", "gray")
             $('#Estacion').html("<h3>Estación</h3>");
             $('#Valorp').html("Valor pronosticado: ");
             $('#Recomendacion').html("Recomendación: ");

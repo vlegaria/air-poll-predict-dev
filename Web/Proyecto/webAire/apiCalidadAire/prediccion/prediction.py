@@ -21,7 +21,7 @@ def prediction(idStation, time1hr, idTarget):
         time_future = 1
     else:
         time_future = 24
-    model_name = "O3-mer_"+str(time_future)+"hr_forecast_model"
+    model_name = "O3-"+str(station.lower())+"_"+str(time_future)+"hr_forecast_model"
     best_model_alias = "champion"
     best_model = mlflow.pyfunc.load_model(f"models:/{model_name}@{best_model_alias}")
     best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
