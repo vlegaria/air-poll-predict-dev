@@ -1,1 +1,4 @@
 .env
+**__pycache__/
+webAire/__pycache__/
+config/__pycache__/

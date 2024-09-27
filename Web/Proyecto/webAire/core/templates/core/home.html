@@ -5,11 +5,17 @@
 {%block background%}{%load static%}{%static 'core/img/home-bg.jpg'%}{%endblock%}
 
 {%block headers%}
-<h1> Estado del Aire </h1>
-<span class="subheading">Pryecto del estado del Aire</span>
+<h1> Modelo de predicción de contaminantes atmosféricos</h1>
+<span class="subheading">Proyecto de Desarrollo Tecnoloógico desarrollado por alumnos del IPN</span>
 {%endblock%}
 
 {%block content%}
+
+<div class="col-lg-8 col-md-10 mx-auto"  style="text-align: justify; color: black;">
+    <p>Las estimaciones se realizan a nivel hiperlocal por cada estación de medición atmosférica para la hora y el día siguiente. </p>
+    <p>Cada estimación se visualizar con un color correspondiente a la clasificación del índice de Calidad del Aire, y con su valor numérico:  </p>
+    <img src="{%static 'core/img/clasificaciones.png' %}" alt="">    
+</div>
 {%endblock%}
 
 
