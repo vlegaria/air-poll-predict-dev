@@ -3,7 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy import text
 import numpy as np
-
+import os
 
 #Conexión a la base de datos
 
@@ -14,7 +14,11 @@ table_name = 'apicalidadaire_prediccion'
 #Insertar datos de Mer_Norm
 
 def InsertarDatosMer():
-    mer = pd.read_csv('Datos/air_traffic_MER.csv')
+    
+    ruta_actual = os.path.dirname(os.path.abspath(__file__))
+    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_traffic_MER.csv')
+    mer = pd.read_csv(ruta_csv)
+    #mer = pd.read_csv('Datos/air_traffic_MER.csv')
 
     for ind in range(mer.shape[0]):
         
@@ -27,7 +31,11 @@ def InsertarDatosMer():
             conn.commit()
 
 def InsertarDatosUiz():
-    uiz = pd.read_csv('Datos/air_and_traffic_UIZ.csv')
+    
+    ruta_actual = os.path.dirname(os.path.abspath(__file__))
+    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_and_traffic_UIZ.csv')
+    uiz = pd.read_csv(ruta_csv)
+    #uiz = pd.read_csv('Datos/air_and_traffic_UIZ.csv')
 
     for ind in range(uiz.shape[0]):
 
@@ -62,7 +70,6 @@ def InsertarDatosEstaciones():
             conn.execute(text(query))
             conn.commit()
 
-#InsertarDatosMer()
-#InsertarDatosUiz()
-
+InsertarDatosMer()
+InsertarDatosUiz()
 InsertarDatosEstaciones()
