@@ -4,10 +4,21 @@ from datetime import datetime, date
 import locale
 from config.config import TOMTOM_API_KEY, OPENWEATHER_API_KEY, DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_PORT
 import os
+import pytz
 from sqlalchemy import create_engine
 import psycopg2
+import mlflow
+from mlflow.tracking import MlflowClient
+from mlflow.models import infer_signature
+import mlflow.sklearn
+import mlflow.pyfunc
+from sklearn.preprocessing import MinMaxScaler
+import pickle
+tz_mexico = pytz.timezone('America/Mexico_City')
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 
+mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
+client = MlflowClient()
 
 def nearest_street_request(stations2forecast,printData):
     engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
@@ -75,7 +86,7 @@ def nearest_street_request(stations2forecast,printData):
                     print(f'Error al realizar la solicitud en la estación {station}. API OpenWeather. Código de estado: {response.status_code}')
 
         columnas = ["date", "CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "year", "month", "day", "hour", "minutes", "traffic"]
-        datetime_now = datetime.now()
+        datetime_now = datetime.now(tz_mexico)
         date_df = datetime_now.strftime('%Y-%m-%d')
         year= str(datetime_now.year)
         month= str(datetime_now.month)
@@ -100,6 +111,76 @@ def get_hourly_averages(stations2forecast, timenow):
         esquema = 'public'
         # Recuperar los datos y cargar en un DataFrame
         table_name = 'apicalidadaire_'+station+'_15m'
+        query = f"SELECT * FROM {esquema}.{table_name};"
+        df = pd.read_sql_query(query, engine)
+        # Obtener la fecha actual
+        fecha_actual = timenow.date()
+        #fecha_actual = date(2024, 5, 31)
+        hora_actual = timenow.hour
+        # Filtrar las filas donde la fecha sea igual a la fecha actual
+        df_now = df.loc[df['date'] == fecha_actual]
+        df_now = df_now.loc[df_now['hour'] == hora_actual]
+        if len(df_now)>0:
+            # Crear una nueva columna 'datetime' combinando fecha, hora y minuto
+            df_now['datetime'] = df_now.apply(lambda row: pd.to_datetime(f"{row['date']} {row['hour']}:{row['minutes']}:00"), axis=1)
+            # Redondear las fechas a la hora más cercana
+            df_now['date'] = df_now['datetime'].dt.floor('H')
+            # Agrupar por la hora redondeada y calcular el promedio de las mediciones
+            df_new = df_now.groupby('date').agg({
+                'CO': 'mean',  # Calcular el promedio de las mediciones  
+                'NO': 'mean', 
+                'NO2': 'mean',  
+                'PM10': 'mean',  
+                'PM25': 'mean',  
+                'SO2': 'mean',  
+                'O3': 'mean',  
+                'TMP': 'mean',
+                'RH': 'mean',  
+                'WSP': 'mean',
+                'WDR': 'mean',  
+                'traffic': 'mean'
+            }).reset_index()
+
+            df_new["NOX"] = 0
+            df_new['year'] = df_new['date'].dt.year
+            df_new['month'] = df_new['date'].dt.month
+            df_new['day'] = df_new['date'].dt.day
+            df_new['hour'] = df_new['date'].dt.hour
+            df_new['minutes'] = df_new['date'].dt.minute
+
+            # Crear el motor de conexión a la base de datos
+            engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+            table_name = 'apicalidadaire_'+station+'_prom_hr'
+            # Insertar datos en la tabla de PostgreSQL
+            df_new.to_sql(table_name, engine, if_exists='append', index=False)
+    return 
+
+
+
+def normalization(stations2forecast, timenow):
+    for station in stations2forecast:
+            
+        model_name = "O3-"+station.lower()+"_1hr_forecast_model"
+        best_model_alias = "champion"
+        best_model = mlflow.pyfunc.load_model(f"models:/{model_name}@{best_model_alias}")
+        best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+        best_model_version = best_model_info.version
+        best_model_run_id = best_model_info.run_id
+        target = "O3"
+        scaler_dir = 'artifacts/'+station.upper()+'_scaler_'+target+'.pkl'
+        local_path = mlflow.artifacts.download_artifacts(run_id=best_model_run_id, artifact_path=scaler_dir)
+        # Abrir el archivo .pkl descargado
+        with open(local_path, "rb") as f:
+            scaler = pickle.load(f)
+        norm_predictions = norm_predictions.reshape(-1, 1)
+        predictions = scaler.inverse_transform(norm_predictions)
+        ozone_value = round(float(predictions),4)
+        print("The Ozone value for the next hour is", ozone_value, "ppb")
+
+        engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+        esquema = 'public'
+        # Recuperar los datos y cargar en un DataFrame
+        table_name = 'apicalidadaire_'+station+'_prom_hr'
         query = f"SELECT * FROM {esquema}.{table_name};"
         df = pd.read_sql_query(query, engine)
         # Obtener la fecha actual
