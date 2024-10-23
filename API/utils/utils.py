@@ -4,8 +4,9 @@ from datetime import datetime, date
 import locale
 from config.config import TOMTOM_API_KEY, OPENWEATHER_API_KEY, DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_PORT
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import psycopg2
+import pickle
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 
 
@@ -98,52 +99,59 @@ def get_hourly_averages(stations2forecast, timenow):
     for station in stations2forecast:
         engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
         esquema = 'public'
-        # Recuperar los datos y cargar en un DataFrame
+        # Recuperar los datos de la hora y cargar en un DataFrame
         table_name = 'apicalidadaire_'+station+'_15m'
-        query = f"SELECT * FROM {esquema}.{table_name};"
+        query = f"SELECT * FROM {esquema}.{table_name} WHERE date = '{timenow.year}-{timenow.month}-{timenow.day}' and hour = {timenow.hour};"
+        print(query)
         df = pd.read_sql_query(query, engine)
-        # Obtener la fecha actual
-        fecha_actual = timenow.date()
-        #fecha_actual = date(2024, 5, 31)
-        hora_actual = timenow.hour
-        # Filtrar las filas donde la fecha sea igual a la fecha actual
-        df_now = df.loc[df['date'] == fecha_actual]
-        df_now = df_now.loc[df_now['hour'] == hora_actual]
-        if len(df_now)>0:
-            # Crear una nueva columna 'datetime' combinando fecha, hora y minuto
-            df_now['datetime'] = df_now.apply(lambda row: pd.to_datetime(f"{row['date']} {row['hour']}:{row['minutes']}:00"), axis=1)
-            # Redondear las fechas a la hora más cercana
-            df_now['date'] = df_now['datetime'].dt.floor('H')
-            # Agrupar por la hora redondeada y calcular el promedio de las mediciones
-            df_new = df_now.groupby('date').agg({
-                'CO': 'mean',  # Calcular el promedio de las mediciones  
-                'NO': 'mean', 
-                'NO2': 'mean',  
-                'PM10': 'mean',  
-                'PM25': 'mean',  
-                'SO2': 'mean',  
-                'O3': 'mean',  
-                'TMP': 'mean',
-                'RH': 'mean',  
-                'WSP': 'mean',
-                'WDR': 'mean',  
-                'traffic': 'mean'
-            }).reset_index()
 
-            df_new["NOX"] = 0
-            df_new['year'] = df_new['date'].dt.year
-            df_new['month'] = df_new['date'].dt.month
-            df_new['day'] = df_new['date'].dt.day
-            df_new['hour'] = df_new['date'].dt.hour
-            df_new['minutes'] = df_new['date'].dt.minute
+        if len(df)>0:
+            tableProm1h = f"apicalidadaire_{station}_prom_hr"
 
-            # Crear el motor de conexión a la base de datos
-            engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
-            table_name = 'apicalidadaire_'+station+'_prom_hr'
-            # Insertar datos en la tabla de PostgreSQL
-            df_new.to_sql(table_name, engine, if_exists='append', index=False)
+            #Duda, los valores pueden venir vacios o tener datos erroneos?
+
+            #Query para insertar los promedios 
+            queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
+            (\'{timenow.year}-{timenow.month}-{timenow.day}\', {df["CO"].mean()}, {df["NO"].mean()}, {df["NOX"].mean()}, {df["NO2"].mean()}, {df["O3"].mean()}, {df["PM10"].mean()}, {df["PM25"].mean()}, {df["RH"].mean()}, 
+            {df["SO2"].mean()}, {df["TMP"].mean()}, {df["WDR"].mean()}, {df["WSP"].mean()}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df["traffic"].mean()});"""
+
+            print(queryInsert)
+
+            #ejecutamos insert
+            with engine.connect() as conn:
+                conn.execute(text(queryInsert))
+                conn.commit()
     return 
 
+
+def norm_data_averages(stations2forecast, timenow):
+    for station in stations2forecast:
+        engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+        esquema = 'public'
+        # Recuperar los datos de la hora y cargar en un DataFrame
+        table_name = 'apicalidadaire_'+station+'_prom_hr'
+        query = f"SELECT * FROM {esquema}.{table_name} WHERE date = '{timenow.year}-{timenow.month}-{timenow.day}' and hour = {timenow.hour};"
+        print(query)
+        df = pd.read_sql_query(query, engine)
+
+        if len(df)>0:
+
+            print(df.head())
+
+            #Quitar valores que no se van a escalar
+            df = df.drop(columns=[ 'idData', 'date', 'month', 'day', 'year', 'minutes'])
+
+            #Ejecutando desde carpeta raiz air-poll-predict-dev
+            with open(f'ML/Scalers/{station}_scaler_O3.pkl', "rb") as f:
+                scaler = pickle.load(f)
+
+            print(scaler)
+
+            df_escalado = scaler.transform(df)
+
+            print(df_escalado)
+
+        
 
 def consult_tables():
     # Conectar a la base de datos
