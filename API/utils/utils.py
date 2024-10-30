@@ -8,6 +8,7 @@ from sqlalchemy import create_engine, text
 import psycopg2
 import pickle
 from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 
 
@@ -96,7 +97,7 @@ def nearest_street_request(stations2forecast,printData):
         df.to_sql(table_name, engine, if_exists='append', index=False)
     return
 
-def get_hourly_averages(stations2forecast, timenow):
+def get_hourly_averages(stations2forecast, timenow): 
     for station in stations2forecast:
         engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
         esquema = 'public'
@@ -109,11 +110,17 @@ def get_hourly_averages(stations2forecast, timenow):
         if len(df)>0:
             tableProm1h = f"apicalidadaire_{station}_prom_hr"
 
-            #Duda, los valores pueden venir vacios o tener datos erroneos?
-            #Si son negativos o vacios hay que cambiarlos a nan
-
-    
-            #Query para insertar los promedios 
+            #Si son negativos o vacios cambiarlos a nan
+            for ind in range(df.shape[0]):
+                for dato in df.columns:
+                    if(dato in ["CO", "NO",  "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "traffic"]):
+                        if(df.loc[ind, dato] < 0):
+                            df.loc[ind, dato] = np.nan
+                          
+                        if(df.loc[ind, dato] == ""):
+                            df.loc[ind, dato] = np.nan
+        
+                #Query para insertar los promedios 
             queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
             (\'{timenow.year}-{timenow.month}-{timenow.day}\', {df["CO"].mean()}, {df["NO"].mean()}, {df["NOX"].mean()}, {df["NO2"].mean()}, {df["O3"].mean()}, {df["PM10"].mean()}, {df["PM25"].mean()}, {df["RH"].mean()}, 
             {df["SO2"].mean()}, {df["TMP"].mean()}, {df["WDR"].mean()}, {df["WSP"].mean()}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df["traffic"].mean()});"""
@@ -124,6 +131,8 @@ def get_hourly_averages(stations2forecast, timenow):
             with engine.connect() as conn:
                 conn.execute(text(queryInsert))
                 conn.commit()
+
+
     return 
 
 
@@ -139,29 +148,25 @@ def norm_data_averages(stations2forecast, timenow):
 
         if len(df)>0:
 
-            print(df.head())
-
             #Ejecutando desde carpeta raiz air-poll-predict-dev
-            with open(f'ML/Scalers/{station}_scaler_O3.pkl', "rb") as f:
+            with open(f'ML/Scalers/{station}_scaler.pkl', "rb") as f:
                 scaler = pickle.load(f)
 
             #Tomar los escalers de mlflow por parametros
 
-            print(scaler)
 
             df_escalado = df.copy()
 
-            df_escalado[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "traffic"]] = scaler.transform(df[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "traffic"]])
-
-            print(df_escalado)
+            df_escalado[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = scaler.transform(df[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
 
             reescalar_Data = False
 
             #Verificar que los datos escalados se encuentren dentro del minimo y maximo establecido 
             for dato in df_escalado.columns:
-                if(not dato in ["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "traffic"]):
-                    if(df_escalado.loc[dato, "1"] < 0 or df_escalado.loc[dato, "1"] >  1):
+                if(dato in ["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]):
+                    if(df_escalado.loc[0, dato] < 0 or df_escalado.loc[0, dato] >  1):
                         reescalar_Data = True
+                        print(df_escalado.loc[0, dato])
 
             if(reescalar_Data):
 
@@ -171,17 +176,31 @@ def norm_data_averages(stations2forecast, timenow):
                 print(query)
                 df_norm = pd.read_sql_query(query, engine)
 
-                df_norm_data = df_norm.copy()
+                df_data = df_norm.copy()
+                
+                for index, row in df_norm.iterrows():
+                    # Seleccionamos los valores de la fila y los transformamos a un array de 1x12
+                    row_values = row[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]].values.reshape(1, -1)
+                    
+                    # Aplicamos inverse_transform y convertimos el resultado en un array plano
+                    inverse_values = scaler.inverse_transform(row_values).flatten()
+                    
+                    # Asignamos los valores transformados a las columnas correspondientes
+                    df_data.loc[index, ["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = inverse_values
+                    #print(nuevaRow)
 
-                df_norm_data[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "traffic"]] = scaler.inverse_transform(df[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "traffic"]]) 
-
-                df_norm_data = df_norm_data.merge(df, ignore_index=True)
+                #Agregamos valor de ultima consulta hora
+                df_data = pd.concat([df_data, df], ignore_index=True)
 
                 nuevoScaler = MinMaxScaler()
 
-                nuevoScaler.fit(df_norm_data)
+                #Obtenemos los nuevos escalers
+                nuevoScaler.fit(df_data[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
 
-                df_norm_data_escalada = nuevoScaler.transform(df_norm_data)
+                df_norm_data_escalada = df_data.copy()
+
+                #Obtener los nuevos valores escalados
+                df_norm_data_escalada[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = nuevoScaler.transform(df_data[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
 
                 #Limpiar tabla para insertar nuevos valores escalados
                 query = f"DELETE FROM {esquema}.{table_name};"
@@ -191,20 +210,31 @@ def norm_data_averages(stations2forecast, timenow):
                     conn.commit()
 
                 #Insertar nuevos valores normalizados con la nueva escala en la base de datos
-                df_norm_data_escalada.to_sql(table_name, engine, if_exists='append', index=False)
+                for indNorm in range(df_norm_data_escalada.shape[0]):
+
+                    queryInsert = f"""INSERT INTO {esquema}.{table_name}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
+                    (\'{df_norm_data_escalada.loc[indNorm,"date"]}\', {df_norm_data_escalada.loc[indNorm,"CO"]}, {df_norm_data_escalada.loc[indNorm,"NO"]}, {df_norm_data_escalada.loc[indNorm,"NOX"]}, {df_norm_data_escalada.loc[indNorm,"NO2"]}, {df_norm_data_escalada.loc[indNorm,"O3"]}, {df_norm_data_escalada.loc[indNorm,"PM10"]}, {df_norm_data_escalada.loc[indNorm,"PM25"]}, {df_norm_data_escalada.loc[indNorm,"RH"]}, 
+                    {df_norm_data_escalada.loc[indNorm,"SO2"]}, {df_norm_data_escalada.loc[indNorm,"TMP"]}, {df_norm_data_escalada.loc[indNorm,"WDR"]}, {df_norm_data_escalada.loc[indNorm,"WSP"]}, {df_norm_data_escalada.loc[indNorm,"year"]}, {df_norm_data_escalada.loc[indNorm,"month"]}, {df_norm_data_escalada.loc[indNorm,"day"]}, {df_norm_data_escalada.loc[indNorm,"hour"]}, 0, {df_norm_data_escalada.loc[indNorm,"traffic"]});"""
+
+                    #print(queryInsert)
+
+                    #ejecutamos insert
+                    with engine.connect() as conn:
+                        conn.execute(text(queryInsert))
+                        conn.commit()
 
                 #Exportar pkl con nuevo escaler
-                pickle.dump(nuevoScaler, open(f'ML/Scalers/{station}_scaler_O3_nuevo.pkl', "wb"))
+                pickle.dump(nuevoScaler, open(f'ML/Scalers/{station}_scaler.pkl', "wb"))
 
                 #Rentrenar modelos, subirlos a mlflow
 
 
             else:
-                
+                print("Insertar nuevo normalizado")
                 #Query para insertar los valores normalizados 
                 queryInsert = f"""INSERT INTO {esquema}.{table_name}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
-                (\'{timenow.year}-{timenow.month}-{timenow.day}\', {df_escalado["CO"]}, {df_escalado["NO"]}, {df_escalado["NOX"].mean()}, {df_escalado["NO2"].mean()}, {df_escalado["O3"].mean()}, {df_escalado["PM10"].mean()}, {df_escalado["PM25"].mean()}, {df_escalado["RH"].mean()}, 
-                {df_escalado["SO2"]}, {df_escalado["TMP"]}, {df_escalado["WDR"]}, {df_escalado["WSP"].mean()}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df_escalado["traffic"].mean()});"""
+                (\'{timenow.year}-{timenow.month}-{timenow.day}\', {df_escalado.loc[0,"CO"]}, {df_escalado.loc[0,"NO"]}, {df_escalado.loc[0,"NOX"]}, {df_escalado.loc[0,"NO2"]}, {df_escalado.loc[0,"O3"]}, {df_escalado.loc[0,"PM10"]}, {df_escalado.loc[0,"PM25"]}, {df_escalado.loc[0,"RH"]}, 
+                {df_escalado.loc[0,"SO2"]}, {df_escalado.loc[0,"TMP"]}, {df_escalado.loc[0,"WDR"]}, {df_escalado.loc[0,"WSP"]}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df_escalado.loc[0,"traffic"]});"""
 
                 print(queryInsert)
 

@@ -62,7 +62,7 @@ def InsertarDatosEstaciones():
             conn.execute(text(query))
             conn.commit()
 
-#InsertarDatosMer()
+InsertarDatosMer()
 #InsertarDatosUiz()
 
-InsertarDatosEstaciones()
+#InsertarDatosEstaciones()
