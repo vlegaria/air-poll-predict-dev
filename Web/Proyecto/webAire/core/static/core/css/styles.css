@@ -104,3 +104,10 @@ body {
     border-radius: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
 }
+
+.avatar {
+    width: 220px !important;
+    height: 200px !important;
+    object-fit: cover;
+    border-radius: 90%; /* Mantén esto si quieres las imágenes circulares */
+}
