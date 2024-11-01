@@ -7,6 +7,10 @@ import psycopg2, psycopg2.extras
 
 #Ciclo que se ejecuta cada 15 min por siempre (o hasta que se interrumpe su ejecución)
 stations2forecast = ['MER','UIZ']
+
+#Subir scalers por primera vez
+#upload_scalers_mlflow(stations2forecast)
+
 while True:
     hora_actual = datetime.now()
     hora = str(hora_actual.hour)

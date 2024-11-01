@@ -9,7 +9,13 @@ import psycopg2
 import pickle
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
+import mlflow
+from mlflow.tracking import MlflowClient
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+
+#Cargar cliente mlfow
+mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
+client = MlflowClient()
 
 
 def nearest_street_request(stations2forecast,printData):
@@ -149,11 +155,22 @@ def norm_data_averages(stations2forecast, timenow):
         if len(df)>0:
 
             #Ejecutando desde carpeta raiz air-poll-predict-dev
-            with open(f'ML/Scalers/{station}_scaler.pkl', "rb") as f:
-                scaler = pickle.load(f)
+            #with open(f'ML/Scalers/{station}_scaler.pkl', "rb") as f:
+            #    scaler = pickle.load(f)
 
             #Tomar los escalers de mlflow por parametros
 
+            model_name = "O3-"+str(station.lower())+"_24hr_forecast_model"
+            best_model_alias = "champion"
+
+            best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+            best_model_run_id = best_model_info.run_id
+
+            scaler_dir = 'artifacts/'+station.upper()+'_scaler.pkl'
+            local_path = mlflow.artifacts.download_artifacts(run_id=best_model_run_id, artifact_path=scaler_dir)
+
+            with open(local_path, "rb") as f:
+                scaler = pickle.load(f)
 
             df_escalado = df.copy()
 
@@ -230,6 +247,20 @@ def norm_data_averages(stations2forecast, timenow):
                 #Exportar pkl con nuevo escaler
                 pickle.dump(nuevoScaler, open(f'ML/Scalers/{station}_scaler.pkl', "wb"))
 
+                #Subir a modelo 24hr
+                with mlflow.start_run(run_id=best_model_run_id) as run:
+                    mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
+
+                #Subir a modelo 1hr
+                model_name = "O3-"+str(station.lower())+"_1hr_forecast_model"
+                best_model_alias = "champion"
+
+                best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+                best_model_run_id = best_model_info.run_id
+
+                with mlflow.start_run(run_id=best_model_run_id) as run:
+                    mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
+
                 #Rentrenar modelos, subirlos a mlflow
 
 
@@ -251,8 +282,30 @@ def norm_data_averages(stations2forecast, timenow):
                 
 
 
+def upload_scalers_mlflow(stations2forecast):
+
+    for station in stations2forecast:
+
+        #Subir a modelo 1hr
+        model_name = "O3-"+str(station.lower())+"_24hr_forecast_model"
+        best_model_alias = "champion"
+
+        best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+        best_model_run_id = best_model_info.run_id
+
+        with mlflow.start_run(run_id=best_model_run_id) as run:
+            mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
 
 
+        #Subir a modelo 1hr
+        model_name = "O3-"+str(station.lower())+"_1hr_forecast_model"
+        best_model_alias = "champion"
+
+        best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+        best_model_run_id = best_model_info.run_id
+
+        with mlflow.start_run(run_id=best_model_run_id) as run:
+            mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
         
 
 def consult_tables():
