@@ -1,12 +1,10 @@
-﻿Contaminante,Zona,"Valor de activación
-(µg/m³o ppb)",Estación,Día de la semana,Fecha de activación,Hora,Fase,"Valor de activación
-(µg/m³o ppb)",Estación,Fecha,Hora,Fecha de desactivación,Hora,"Valor de activación
-(µg/m³o ppb)"
+﻿Contaminante,Zona,Valor Activación,Estación,Día,Fecha de activación,Hora de Activacion,Fase,Valor de activación durante,Estación,Fecha,Hora,Fecha de desactivación,Hora de desactivación,"Valor de activación
+desactivacion"
 Ozono,SO,160,Centro de Ciencias de la Atmósfera,Jueves,30/05/2024,15:00,I,160,Centro de Ciencias de la Atmósfera,30/05/2024,15:00,31/05/2024,15:00,120
 Ozono,SE,174,UAM-Xochimilco,Sábado,25/05/2024,14:00,I,174,UAM-Xochimilco,25/05/2024,14:00,26/05/2024,17:00,117
 Ozono,CE,158,Benito Juárez,Miércoles,22/05/2024,14:00,I,170,UAM-Xochimilco,22/05/2024,15:00,24/05/2024,18:00,105
 Ozono,SO,160,Centro de Ciencias de la Atmósfera,Sábado,18/05/2024,14:00,I,165,Centro de Ciencias de la Atmosfera,18/05/2024,15:00,19/05/2024,15:00,120
-Ozono,SE,156,UAM-Iztapalapa,Lunes,13/05/20245,15:00,I,181,Cuautitlán,14/05/2024,17:00,16/05/2024,17:00,96
+Ozono,SE,156,UAM-Iztapalapa,Lunes,13/05/2024,15:00,I,181,Cuautitlán,14/05/2024,17:00,16/05/2024,17:00,96
 Ozono,NE,158,Gustavo A. Madero,Jueves,09/05/2024,13:00,I,168,Pedegal,09/05/2024,15:00,10/05/2024,17:00,105
 Ozono,NO,170,Tlalnepantla,Viernes,03/05/2024,15:00,I,170,Tlalnepantla,03/05/2024,15:00,04/05/2024,17:00,96
 Ozono,NO,158,Tlalnepantla,Martes,30/04/2024,15:00,I,163,Tultitlán,30/04/2024,17:00,01/05/2024,17:00,113
@@ -90,7 +88,7 @@ Ozono,SO,272,Plateros,Viernes,12/02/1993,14:30,I,280,Pedregal,12/02/1993,16:00,1
 Ozono,SO,338,Pedregal,Miércoles,30/12/1992,16:00,II,338,Pedregal,30/12/1992,16:00,01/01/1993,17:00,117
 Ozono,NO,300,ENEP Acatlán,Viernes,18/12/1992,14:00,I,300,ENEP Acatlán,18/12/1992,14:00,19/12/1992,17:00,191
 Ozono,SO,360,Plateros,Viernes,20/03/1992,13:00,II,360,Plateros,20/03/1992,13:00,10/04/1992,13:00,187
-Ozono,SO,293,Pedregal,Jueves,19/03/1992,12:00,I,Continua Fase II,Continua Fase II,Continua Fase II,Continua Fase II,Continua Fase II,Continua Fase II,Continua Fase II
+Ozono,SO,293,Pedregal,Jueves,19/03/1992,12:00,I,360,Plateros,20/03/1992,13:00,10/04/1992,13:00,187
 Ozono,SO,398,Plateros,Lunes,16/03/1992,14:00,II,398,Plateros,16/03/1992,14:00,17/03/1992,14:00,151
 Ozono,SO,276,Plateros,Viernes,06/03/1992,12:00,I,276,Plateros,06/03/1992,12:00,07/03/1992,14:00,187
 Ozono,SO,274,Pedregal,Martes,18/02/1992,14:30,I,277,Plateros,19/02/1992,14:00,20/02/1992,15:00,173

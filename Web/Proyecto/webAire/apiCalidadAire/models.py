@@ -256,7 +256,7 @@ class PED_PROM_HR(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=16, decimal_places=6, default='0.00')
-    contingency = models.BooleanField(default=False)
+    contingency = models.IntegerField(default='0')
 
 
 class MER_PROM_HR(models.Model):
@@ -280,7 +280,7 @@ class MER_PROM_HR(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=16, decimal_places=6, default='0.00')
-    contingency = models.BooleanField(default=False)
+    contingency = models.IntegerField(default='0')
     
 
 class UIZ_PROM_HR(models.Model):
@@ -304,7 +304,7 @@ class UIZ_PROM_HR(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=16, decimal_places=6,  default='0.00')
-    contingency = models.BooleanField(default=False)
+    contingency = models.IntegerField(default='0')
 
 
 class EstatusCalidad(models.Model):
