@@ -71,10 +71,10 @@ def nearest_street_requestGob(stations2forecast,printData):
             dato = dataofDay.loc[dataofDay['Hora'] == hour, station].values[0]
 
             if(dato != "nr"):
-                if float(dato) > 0:
+                if float(dato) >= 0:
                     contEstacion.loc[contEstacion['station'] == station, colEstation] = dato
                 else: 
-                    contEstacion.loc[contEstacion['station'] == station, colEstation] = 0
+                    contEstacion.loc[contEstacion['station'] == station, colEstation] = np.nan
             else: 
                 contEstacion.loc[contEstacion['station'] == station, colEstation] = np.nan
 

@@ -116,6 +116,8 @@ def get_hourly_averages(stations2forecast, timenow):
         if len(df)>0:
             tableProm1h = f"apicalidadaire_{station}_prom_hr"
 
+            #Validar si todos los datos son ceros y no guarde
+
             #Si son negativos o vacios cambiarlos a nan
             for ind in range(df.shape[0]):
                 for dato in df.columns:
@@ -286,7 +288,7 @@ def upload_scalers_mlflow(stations2forecast):
 
     for station in stations2forecast:
 
-        #Subir a modelo 1hr
+        #Subir a modelo 24hr
         model_name = "O3-"+str(station.lower())+"_24hr_forecast_model"
         best_model_alias = "champion"
 
@@ -307,6 +309,23 @@ def upload_scalers_mlflow(stations2forecast):
         with mlflow.start_run(run_id=best_model_run_id) as run:
             mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
         
+def train_models(stations2forecast, timenow):
+
+    for station in stations2forecast:
+
+        #24Hr
+        model_name = "O3-"+str(station.lower())+"_24hr_forecast_model"
+        best_model_alias = "champion"
+
+        best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+        best_model_run_id = best_model_info.run_id
+        best_metrics = client.get_run(best_model_run_id).data.metrics
+
+        MLFLOW_experiment = f"O3 24hr forecast {station}"
+        mlflow.set_experiment(MLFLOW_experiment)
+
+        with mlflow.start_run() as run:
+            pass
 
 def consult_tables():
     # Conectar a la base de datos
@@ -345,3 +364,4 @@ def consult_tables():
             connection.close()
 
     return
+ 

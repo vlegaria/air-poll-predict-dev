@@ -18,20 +18,11 @@ while True:
 
     if int(minuto) % 15 == 0  and int(minuto) != 60:
 
-        #Verificamos si la pagina del gobierno esta caida y si es asi consultamos en Api
-        response = requests.get(urlGob)
-
-        if response.status_code == 200:
-            try:
-                request_traffic(stations2forecast, printData=False)
-            except Exception as e:
-                print("No se descargaron datos a las: ", hora,":", minuto,". Ocurrió una excepción:", e)
-
-        else:
-            try:
-                nearest_street_request(stations2forecast, printData=False)
-            except Exception as e:
-                print("No se descargaron datos a las: ", hora,":", minuto,". Ocurrió una excepción:", e)
+        try:
+            nearest_street_request(stations2forecast, printData=False)
+        except Exception as e:
+            print("No se descargaron datos a las: ", hora,":", minuto,". Ocurrió una excepción:", e)
+            
 
     
     if int(minuto) == 55:
