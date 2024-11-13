@@ -136,4 +136,4 @@ def InsertarDatosUizHr():
 
 #InsertarDatosMerHr()
 
-InsertarDatosUizHr()
+#InsertarDatosUizHr()
