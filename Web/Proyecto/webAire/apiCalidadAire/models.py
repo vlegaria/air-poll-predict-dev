@@ -23,6 +23,7 @@ class PED_NORM(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=13, decimal_places=12, default='0.00')
+    contingency = models.IntegerField(default='0')
 
 class PED_NORM_24_CLASSIF(models.Model):
     idData = models.AutoField(primary_key=True)
@@ -69,6 +70,7 @@ class MER_NORM(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=13, decimal_places=12, default='0.00')
+    contingency = models.IntegerField(default='0')
 
 class MER_NORM_24_CLASSIF(models.Model):
     idData = models.AutoField(primary_key=True)
@@ -116,6 +118,7 @@ class UIZ_NORM(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=13, decimal_places=12,  default='0.00')
+    contingency = models.IntegerField(default='0')
 
 class UIZ_NORM_24_CLASSIF(models.Model):
     idData = models.AutoField(primary_key=True)

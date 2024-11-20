@@ -3,6 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy import text
 import numpy as np
+import datetime
 
 stations2forecast = ['mer','uiz']
 
@@ -16,55 +17,63 @@ table_name = 'apicalidadaire_prediccion'
 
 for ind in range(contigen.shape[0]):
 
-
-    #Fecha y hora de activación
+    #Fecha de activacion
     fechaAct = contigen.loc[ind, "Fecha de activación"]
     fechaActSep = fechaAct.split("/")
 
-    diaAct = fechaActSep[0]
-    mesAct = fechaActSep[1]
-    yearAct = fechaActSep[2]
+    diaAct = int(fechaActSep[0])
+    mesAct = int(fechaActSep[1])
+    yearAct = int(fechaActSep[2])
 
     horaCompAct = contigen.loc[ind, "Hora de Activacion"]
     horaCompActSep = horaCompAct.split(":")
 
-    horaAct = horaCompActSep[0]
+    horaAct = int(horaCompActSep[0])
 
-    #Fehca y hora de desactivación
+    fechaAct = datetime.datetime(yearAct,mesAct,diaAct,horaAct)
+
+    #Fecha de desactivación
+
     fechaDes = contigen.loc[ind, "Fecha de desactivación"]
     fechaDesSep = fechaDes.split("/")
 
-    diaDes = fechaDesSep[0]
-    mesDes = fechaDesSep[1]
-    yearDes = fechaDesSep[2]
+    diaDes = int(fechaDesSep[0])
+    mesDes = int(fechaDesSep[1])
+    yearDes = int(fechaDesSep[2])
 
     horaCompDes = contigen.loc[ind, "Hora de desactivación"]
     horaCompDesSep = horaCompDes.split(":")
 
-    horaDes = horaCompDesSep[0]
+    horaDes = int(horaCompDesSep[0])
 
-    for indYear in range(int(yearAct),int(yearDes) + 1 ):
-        
-        for indMonth in range(1,13):
+    fechaDes = datetime.datetime(yearDes,mesDes,diaDes,horaDes)
 
-            #Validamos si el mes esta dentro del periodo
-            if (indMonth >= int(mesAct) and int(yearAct) == indYear and int(yearAct) != int(yearDes)) or (indYear != int(yearAct) and indYear != int(yearDes)) or (indMonth <= int(mesDes) and int(yearDes) == indYear and int(yearAct) != int(yearDes)) or ( yearDes == yearAct and indMonth >= int(mesAct) and indMonth <= int(mesDes)) :
-                
-                #Validamos si el dia esta dentro del periodo
-                for indDia in range(1,32):
-                    if (indDia >= int(diaAct) and int(mesAct) == indMonth and int(mesAct) != int(mesDes)) or (indMonth != int(mesAct) and indMonth != int(mesDes)) or (indDia <= int(diaDes) and int(mesDes) == indMonth and int(mesAct) != int(mesDes)) or ( mesDes == mesAct and indDia >= int(diaAct) and indDia <= int(diaDes)) :
-                
-                        #Validamos si esta dentro de la hora
-                        for indHora in range(0,24):
-                            if (indHora >= int(horaAct) and int(diaAct) == indDia and int(diaAct) != int(diaDes)) or (indDia != int(diaAct) and indDia != int(diaDes)) or (indHora <= int(horaDes) and int(diaDes) == indDia and int(diaAct) != int(diaDes)) or ( diaDes == diaAct and indHora >= int(horaAct) and indHora <= int(horaDes)) :
-                            
-                                for station in stations2forecast:
+    duracion = fechaDes - fechaAct
 
-                                    query = f"update apicalidadaire_{station}_prom_hr set contingency = 1 where year = {indYear} and month = {indMonth} and day = {indDia} and hour = {indHora};"
+    duracionHours = int((duracion.total_seconds())/3600)
 
-                                    print(query)
-                                    
-                                    #ejecutamos query
-                                    with engine.connect() as conn:
-                                        conn.execute(text(query))
-                                        conn.commit()
+    for hora in range(duracionHours + 1):
+
+        deltaHora = datetime.timedelta(hours=hora)
+
+        fechaDurante = fechaAct + deltaHora
+
+        for station in stations2forecast:
+
+            query = f"update apicalidadaire_{station}_prom_hr set contingency = 1 where year = {fechaDurante.year} and month = {fechaDurante.month} and day = {fechaDurante.day} and hour = {fechaDurante.hour};"
+
+            print(query)
+
+            #ejecutamos query
+            with engine.connect() as conn:
+                conn.execute(text(query))
+                conn.commit()
+
+            query = f"update apicalidadaire_{station}_norm set contingency = 1 where year = {fechaDurante.year} and month = {fechaDurante.month} and day = {fechaDurante.day} and hour = {fechaDurante.hour};"
+
+            print(query)
+
+            #ejecutamos query
+            with engine.connect() as conn:
+                conn.execute(text(query))
+                conn.commit()

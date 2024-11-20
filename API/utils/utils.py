@@ -13,6 +13,8 @@ import mlflow
 from mlflow.tracking import MlflowClient
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 
+from predictor import *
+
 #Cargar cliente mlfow
 mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
 client = MlflowClient()
@@ -129,9 +131,9 @@ def get_hourly_averages(stations2forecast, timenow):
                             df.loc[ind, dato] = np.nan
         
                 #Query para insertar los promedios 
-            queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
+            queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic, contingency) VALUES 
             (\'{timenow.year}-{timenow.month}-{timenow.day}\', {df["CO"].mean()}, {df["NO"].mean()}, {df["NOX"].mean()}, {df["NO2"].mean()}, {df["O3"].mean()}, {df["PM10"].mean()}, {df["PM25"].mean()}, {df["RH"].mean()}, 
-            {df["SO2"].mean()}, {df["TMP"].mean()}, {df["WDR"].mean()}, {df["WSP"].mean()}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df["traffic"].mean()});"""
+            {df["SO2"].mean()}, {df["TMP"].mean()}, {df["WDR"].mean()}, {df["WSP"].mean()}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df["traffic"].mean()},0);"""
 
             print(queryInsert)
 
@@ -231,20 +233,27 @@ def norm_data_averages(stations2forecast, timenow):
                     conn.commit()
 
                 #Insertar nuevos valores normalizados con la nueva escala en la base de datos
-                for indNorm in range(df_norm_data_escalada.shape[0]):
+                #for indNorm in range(df_norm_data_escalada.shape[0]):
 
-                    queryInsert = f"""INSERT INTO {esquema}.{table_name}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
-                    (\'{df_norm_data_escalada.loc[indNorm,"date"]}\', {df_norm_data_escalada.loc[indNorm,"CO"]}, {df_norm_data_escalada.loc[indNorm,"NO"]}, {df_norm_data_escalada.loc[indNorm,"NOX"]}, {df_norm_data_escalada.loc[indNorm,"NO2"]}, {df_norm_data_escalada.loc[indNorm,"O3"]}, {df_norm_data_escalada.loc[indNorm,"PM10"]}, {df_norm_data_escalada.loc[indNorm,"PM25"]}, {df_norm_data_escalada.loc[indNorm,"RH"]}, 
-                    {df_norm_data_escalada.loc[indNorm,"SO2"]}, {df_norm_data_escalada.loc[indNorm,"TMP"]}, {df_norm_data_escalada.loc[indNorm,"WDR"]}, {df_norm_data_escalada.loc[indNorm,"WSP"]}, {df_norm_data_escalada.loc[indNorm,"year"]}, {df_norm_data_escalada.loc[indNorm,"month"]}, {df_norm_data_escalada.loc[indNorm,"day"]}, {df_norm_data_escalada.loc[indNorm,"hour"]}, 0, {df_norm_data_escalada.loc[indNorm,"traffic"]});"""
+                    #queryInsert = f"""INSERT INTO {esquema}.{table_name}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
+                    #(\'{df_norm_data_escalada.loc[indNorm,"date"]}\', {df_norm_data_escalada.loc[indNorm,"CO"]}, {df_norm_data_escalada.loc[indNorm,"NO"]}, {df_norm_data_escalada.loc[indNorm,"NOX"]}, {df_norm_data_escalada.loc[indNorm,"NO2"]}, {df_norm_data_escalada.loc[indNorm,"O3"]}, {df_norm_data_escalada.loc[indNorm,"PM10"]}, {df_norm_data_escalada.loc[indNorm,"PM25"]}, {df_norm_data_escalada.loc[indNorm,"RH"]}, 
+                    #{df_norm_data_escalada.loc[indNorm,"SO2"]}, {df_norm_data_escalada.loc[indNorm,"TMP"]}, {df_norm_data_escalada.loc[indNorm,"WDR"]}, {df_norm_data_escalada.loc[indNorm,"WSP"]}, {df_norm_data_escalada.loc[indNorm,"year"]}, {df_norm_data_escalada.loc[indNorm,"month"]}, {df_norm_data_escalada.loc[indNorm,"day"]}, {df_norm_data_escalada.loc[indNorm,"hour"]}, 0, {df_norm_data_escalada.loc[indNorm,"traffic"]});"""
 
                     #print(queryInsert)
 
-                    queryInsert = queryInsert.replace("nan","\'nan\'")
+                    #queryInsert = queryInsert.replace("nan","\'nan\'")
 
                     #ejecutamos insert
-                    with engine.connect() as conn:
-                        conn.execute(text(queryInsert))
-                        conn.commit()
+                    #with engine.connect() as conn:
+                    #    conn.execute(text(queryInsert))
+                    #    conn.commit()
+
+                #Insertar nuevos valores normalizados con la nueva escala en la base de datos
+                df_norm_data_escalada = df_norm_data_escalada.applymap(lambda x: "nan" if pd.isna(x) else x)
+
+                df_norm_data_escalada = df_norm_data_escalada.drop(columns=['idData'])
+
+                df_norm_data_escalada.to_sql(table_name, engine, if_exists='append', method='multi', index=False)
 
                 #Exportar pkl con nuevo escaler
                 pickle.dump(nuevoScaler, open(f'ML/Scalers/{station}_scaler.pkl', "wb"))
@@ -264,14 +273,17 @@ def norm_data_averages(stations2forecast, timenow):
                     mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
 
                 #Rentrenar modelos, subirlos a mlflow
+                timesfuture = [1,24]
+
+                train_models([station] ,timesfuture, True)
 
 
             else:
                 print("Insertar nuevo normalizado")
                 #Query para insertar los valores normalizados 
-                queryInsert = f"""INSERT INTO {esquema}.{table_name}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
+                queryInsert = f"""INSERT INTO {esquema}.{table_name}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic, contingency) VALUES 
                 (\'{timenow.year}-{timenow.month}-{timenow.day}\', {df_escalado.loc[0,"CO"]}, {df_escalado.loc[0,"NO"]}, {df_escalado.loc[0,"NOX"]}, {df_escalado.loc[0,"NO2"]}, {df_escalado.loc[0,"O3"]}, {df_escalado.loc[0,"PM10"]}, {df_escalado.loc[0,"PM25"]}, {df_escalado.loc[0,"RH"]}, 
-                {df_escalado.loc[0,"SO2"]}, {df_escalado.loc[0,"TMP"]}, {df_escalado.loc[0,"WDR"]}, {df_escalado.loc[0,"WSP"]}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df_escalado.loc[0,"traffic"]});"""
+                {df_escalado.loc[0,"SO2"]}, {df_escalado.loc[0,"TMP"]}, {df_escalado.loc[0,"WDR"]}, {df_escalado.loc[0,"WSP"]}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df_escalado.loc[0,"traffic"]}, 0);"""
 
                 queryInsert = queryInsert.replace("nan","\'nan\'")
 
@@ -309,23 +321,22 @@ def upload_scalers_mlflow(stations2forecast):
         with mlflow.start_run(run_id=best_model_run_id) as run:
             mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
         
-def train_models(stations2forecast, timenow):
+def train_models(stations2forecast, timesfuture, normalizado):
 
     for station in stations2forecast:
+        
+        for time in timesfuture:
 
-        #24Hr
-        model_name = "O3-"+str(station.lower())+"_24hr_forecast_model"
-        best_model_alias = "champion"
+            model = ozonePredictor(station,time)
 
-        best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
-        best_model_run_id = best_model_info.run_id
-        best_metrics = client.get_run(best_model_run_id).data.metrics
+            model.prepare_data(time_steps=24)
 
-        MLFLOW_experiment = f"O3 24hr forecast {station}"
-        mlflow.set_experiment(MLFLOW_experiment)
+            model.train()
 
-        with mlflow.start_run() as run:
-            pass
+            model.test()
+
+            model.implementExperimentMlflow(normalizado)
+
 
 def consult_tables():
     # Conectar a la base de datos
