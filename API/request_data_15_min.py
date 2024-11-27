@@ -9,6 +9,8 @@ import pytz
 #Ciclo que se ejecuta cada 15 min por siempre (o hasta que se interrumpe su ejecución)
 stations2forecast = ['MER','UIZ']
 
+locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+tz_mexico = pytz.timezone('America/Mexico_City')
 while True:
     hora_actual = datetime.now(tz_mexico)
     hora = str(hora_actual.hour)
