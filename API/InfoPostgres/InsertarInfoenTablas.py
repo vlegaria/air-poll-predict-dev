@@ -13,6 +13,7 @@ table_name = 'apicalidadaire_prediccion'
 
 #Insertar datos de Mer_Norm
 
+
 def InsertarDatosMer():
     
     ruta_actual = os.path.dirname(os.path.abspath(__file__))
@@ -71,5 +72,6 @@ def InsertarDatosEstaciones():
             conn.commit()
 
 InsertarDatosMer()
-InsertarDatosUiz()
-InsertarDatosEstaciones()
+#InsertarDatosUiz()
+
+#InsertarDatosEstaciones()

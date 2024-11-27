@@ -4,21 +4,20 @@ from datetime import datetime, date
 import locale
 from config.config import TOMTOM_API_KEY, OPENWEATHER_API_KEY, DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_PORT
 import os
-import pytz
-from sqlalchemy import create_engine
+
+from sqlalchemy import create_engine, text
 import psycopg2
+import pickle
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 import mlflow
 from mlflow.tracking import MlflowClient
-from mlflow.models import infer_signature
-import mlflow.sklearn
-import mlflow.pyfunc
-from sklearn.preprocessing import MinMaxScaler
-import pickle
-tz_mexico = pytz.timezone('America/Mexico_City')
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 
+#Cargar cliente mlfow
 mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
 client = MlflowClient()
+
 
 def nearest_street_request(stations2forecast,printData):
     engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
@@ -105,126 +104,211 @@ def nearest_street_request(stations2forecast,printData):
         df.to_sql(table_name, engine, if_exists='append', index=False)
     return
 
-def get_hourly_averages(stations2forecast, timenow):
+def get_hourly_averages(stations2forecast, timenow): 
     for station in stations2forecast:
         engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
         esquema = 'public'
-        # Recuperar los datos y cargar en un DataFrame
+        # Recuperar los datos de la hora y cargar en un DataFrame
         table_name = 'apicalidadaire_'+station+'_15m'
-        query = f"SELECT * FROM {esquema}.{table_name};"
+        query = f"SELECT * FROM {esquema}.{table_name} WHERE date = '{timenow.year}-{timenow.month}-{timenow.day}' and hour = {timenow.hour};"
+        print(query)
         df = pd.read_sql_query(query, engine)
-        # Obtener la fecha actual
-        fecha_actual = timenow.date()
-        #fecha_actual = date(2024, 5, 31)
-        hora_actual = timenow.hour
-        # Filtrar las filas donde la fecha sea igual a la fecha actual
-        df_now = df.loc[df['date'] == fecha_actual]
-        df_now = df_now.loc[df_now['hour'] == hora_actual]
-        if len(df_now)>0:
-            # Crear una nueva columna 'datetime' combinando fecha, hora y minuto
-            df_now['datetime'] = df_now.apply(lambda row: pd.to_datetime(f"{row['date']} {row['hour']}:{row['minutes']}:00"), axis=1)
-            # Redondear las fechas a la hora más cercana
-            df_now['date'] = df_now['datetime'].dt.floor('H')
-            # Agrupar por la hora redondeada y calcular el promedio de las mediciones
-            df_new = df_now.groupby('date').agg({
-                'CO': 'mean',  # Calcular el promedio de las mediciones  
-                'NO': 'mean', 
-                'NO2': 'mean',  
-                'PM10': 'mean',  
-                'PM25': 'mean',  
-                'SO2': 'mean',  
-                'O3': 'mean',  
-                'TMP': 'mean',
-                'RH': 'mean',  
-                'WSP': 'mean',
-                'WDR': 'mean',  
-                'traffic': 'mean'
-            }).reset_index()
 
-            df_new["NOX"] = 0
-            df_new['year'] = df_new['date'].dt.year
-            df_new['month'] = df_new['date'].dt.month
-            df_new['day'] = df_new['date'].dt.day
-            df_new['hour'] = df_new['date'].dt.hour
-            df_new['minutes'] = df_new['date'].dt.minute
+        if len(df)>0:
+            tableProm1h = f"apicalidadaire_{station}_prom_hr"
 
-            # Crear el motor de conexión a la base de datos
-            engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
-            table_name = 'apicalidadaire_'+station+'_prom_hr'
-            # Insertar datos en la tabla de PostgreSQL
-            df_new.to_sql(table_name, engine, if_exists='append', index=False)
+            #Si son negativos o vacios cambiarlos a nan
+            for ind in range(df.shape[0]):
+                for dato in df.columns:
+                    if(dato in ["CO", "NO",  "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "traffic"]):
+                        if(df.loc[ind, dato] < 0):
+                            df.loc[ind, dato] = np.nan
+                          
+                        if(df.loc[ind, dato] == ""):
+                            df.loc[ind, dato] = np.nan
+        
+                #Query para insertar los promedios 
+            queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
+            (\'{timenow.year}-{timenow.month}-{timenow.day}\', {df["CO"].mean()}, {df["NO"].mean()}, {df["NOX"].mean()}, {df["NO2"].mean()}, {df["O3"].mean()}, {df["PM10"].mean()}, {df["PM25"].mean()}, {df["RH"].mean()}, 
+            {df["SO2"].mean()}, {df["TMP"].mean()}, {df["WDR"].mean()}, {df["WSP"].mean()}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df["traffic"].mean()});"""
+
+            print(queryInsert)
+
+            #ejecutamos insert
+            with engine.connect() as conn:
+                conn.execute(text(queryInsert))
+                conn.commit()
+
+
     return 
 
 
 
-def normalization(stations2forecast, timenow):
+def norm_data_averages(stations2forecast, timenow):
     for station in stations2forecast:
-            
-        model_name = "O3-"+station.lower()+"_1hr_forecast_model"
-        best_model_alias = "champion"
-        best_model = mlflow.pyfunc.load_model(f"models:/{model_name}@{best_model_alias}")
-        best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
-        best_model_version = best_model_info.version
-        best_model_run_id = best_model_info.run_id
-        target = "O3"
-        scaler_dir = 'artifacts/'+station.upper()+'_scaler_'+target+'.pkl'
-        local_path = mlflow.artifacts.download_artifacts(run_id=best_model_run_id, artifact_path=scaler_dir)
-        # Abrir el archivo .pkl descargado
-        with open(local_path, "rb") as f:
-            scaler = pickle.load(f)
-        norm_predictions = norm_predictions.reshape(-1, 1)
-        predictions = scaler.inverse_transform(norm_predictions)
-        ozone_value = round(float(predictions),4)
-        print("The Ozone value for the next hour is", ozone_value, "ppb")
-
         engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
         esquema = 'public'
-        # Recuperar los datos y cargar en un DataFrame
+        # Recuperar los datos de la hora y cargar en un DataFrame
         table_name = 'apicalidadaire_'+station+'_prom_hr'
-        query = f"SELECT * FROM {esquema}.{table_name};"
+        query = f"SELECT * FROM {esquema}.{table_name} WHERE date = '{timenow.year}-{timenow.month}-{timenow.day}' and hour = {timenow.hour};"
+        print(query)
         df = pd.read_sql_query(query, engine)
-        # Obtener la fecha actual
-        fecha_actual = timenow.date()
-        #fecha_actual = date(2024, 5, 31)
-        hora_actual = timenow.hour
-        # Filtrar las filas donde la fecha sea igual a la fecha actual
-        df_now = df.loc[df['date'] == fecha_actual]
-        df_now = df_now.loc[df_now['hour'] == hora_actual]
-        if len(df_now)>0:
-            # Crear una nueva columna 'datetime' combinando fecha, hora y minuto
-            df_now['datetime'] = df_now.apply(lambda row: pd.to_datetime(f"{row['date']} {row['hour']}:{row['minutes']}:00"), axis=1)
-            # Redondear las fechas a la hora más cercana
-            df_now['date'] = df_now['datetime'].dt.floor('H')
-            # Agrupar por la hora redondeada y calcular el promedio de las mediciones
-            df_new = df_now.groupby('date').agg({
-                'CO': 'mean',  # Calcular el promedio de las mediciones  
-                'NO': 'mean', 
-                'NO2': 'mean',  
-                'PM10': 'mean',  
-                'PM25': 'mean',  
-                'SO2': 'mean',  
-                'O3': 'mean',  
-                'TMP': 'mean',
-                'RH': 'mean',  
-                'WSP': 'mean',
-                'WDR': 'mean',  
-                'traffic': 'mean'
-            }).reset_index()
 
-            df_new["NOX"] = 0
-            df_new['year'] = df_new['date'].dt.year
-            df_new['month'] = df_new['date'].dt.month
-            df_new['day'] = df_new['date'].dt.day
-            df_new['hour'] = df_new['date'].dt.hour
-            df_new['minutes'] = df_new['date'].dt.minute
+        if len(df)>0:
 
-            # Crear el motor de conexión a la base de datos
-            engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
-            table_name = 'apicalidadaire_'+station+'_prom_hr'
-            # Insertar datos en la tabla de PostgreSQL
-            df_new.to_sql(table_name, engine, if_exists='append', index=False)
-    return 
+            #Ejecutando desde carpeta raiz air-poll-predict-dev
+            #with open(f'ML/Scalers/{station}_scaler.pkl', "rb") as f:
+            #    scaler = pickle.load(f)
 
+            #Tomar los escalers de mlflow por parametros
+
+            model_name = "O3-"+str(station.lower())+"_24hr_forecast_model"
+            best_model_alias = "champion"
+
+            best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+            best_model_run_id = best_model_info.run_id
+
+            scaler_dir = 'artifacts/'+station.upper()+'_scaler.pkl'
+            local_path = mlflow.artifacts.download_artifacts(run_id=best_model_run_id, artifact_path=scaler_dir)
+
+            with open(local_path, "rb") as f:
+                scaler = pickle.load(f)
+
+            df_escalado = df.copy()
+
+            df_escalado[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = scaler.transform(df[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
+
+            reescalar_Data = False
+
+            #Verificar que los datos escalados se encuentren dentro del minimo y maximo establecido 
+            for dato in df_escalado.columns:
+                if(dato in ["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]):
+                    if(df_escalado.loc[0, dato] < 0 or df_escalado.loc[0, dato] >  1):
+                        reescalar_Data = True
+                        print(df_escalado.loc[0, dato])
+
+            table_name = 'apicalidadaire_'+station.lower()+'_norm'
+
+            if(reescalar_Data):
+
+                # Recuperar los datos de la hora y cargar en un DataFrame
+                
+                query = f"SELECT * FROM {esquema}.{table_name};"
+                print(query)
+                df_norm = pd.read_sql_query(query, engine)
+
+                df_data = df_norm.copy()
+                
+                for index, row in df_norm.iterrows():
+                    # Seleccionamos los valores de la fila y los transformamos a un array de 1x12
+                    row_values = row[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]].values.reshape(1, -1)
+                    
+                    # Aplicamos inverse_transform y convertimos el resultado en un array plano
+                    inverse_values = scaler.inverse_transform(row_values).flatten()
+                    
+                    # Asignamos los valores transformados a las columnas correspondientes
+                    df_data.loc[index, ["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = inverse_values
+                    #print(nuevaRow)
+
+                #Agregamos valor de ultima consulta hora
+                df_data = pd.concat([df_data, df], ignore_index=True)
+
+                nuevoScaler = MinMaxScaler()
+
+                #Obtenemos los nuevos escalers
+                nuevoScaler.fit(df_data[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
+
+                df_norm_data_escalada = df_data.copy()
+
+                #Obtener los nuevos valores escalados
+                df_norm_data_escalada[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = nuevoScaler.transform(df_data[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
+
+                #Limpiar tabla para insertar nuevos valores escalados
+                query = f"DELETE FROM {esquema}.{table_name};"
+                print(query)
+                with engine.connect() as conn:
+                    conn.execute(text(query))
+                    conn.commit()
+
+                #Insertar nuevos valores normalizados con la nueva escala en la base de datos
+                for indNorm in range(df_norm_data_escalada.shape[0]):
+
+                    queryInsert = f"""INSERT INTO {esquema}.{table_name}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
+                    (\'{df_norm_data_escalada.loc[indNorm,"date"]}\', {df_norm_data_escalada.loc[indNorm,"CO"]}, {df_norm_data_escalada.loc[indNorm,"NO"]}, {df_norm_data_escalada.loc[indNorm,"NOX"]}, {df_norm_data_escalada.loc[indNorm,"NO2"]}, {df_norm_data_escalada.loc[indNorm,"O3"]}, {df_norm_data_escalada.loc[indNorm,"PM10"]}, {df_norm_data_escalada.loc[indNorm,"PM25"]}, {df_norm_data_escalada.loc[indNorm,"RH"]}, 
+                    {df_norm_data_escalada.loc[indNorm,"SO2"]}, {df_norm_data_escalada.loc[indNorm,"TMP"]}, {df_norm_data_escalada.loc[indNorm,"WDR"]}, {df_norm_data_escalada.loc[indNorm,"WSP"]}, {df_norm_data_escalada.loc[indNorm,"year"]}, {df_norm_data_escalada.loc[indNorm,"month"]}, {df_norm_data_escalada.loc[indNorm,"day"]}, {df_norm_data_escalada.loc[indNorm,"hour"]}, 0, {df_norm_data_escalada.loc[indNorm,"traffic"]});"""
+
+                    #print(queryInsert)
+
+                    queryInsert = queryInsert.replace("nan","\'nan\'")
+
+                    #ejecutamos insert
+                    with engine.connect() as conn:
+                        conn.execute(text(queryInsert))
+                        conn.commit()
+
+                #Exportar pkl con nuevo escaler
+                pickle.dump(nuevoScaler, open(f'ML/Scalers/{station}_scaler.pkl', "wb"))
+
+                #Subir a modelo 24hr
+                with mlflow.start_run(run_id=best_model_run_id) as run:
+                    mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
+
+                #Subir a modelo 1hr
+                model_name = "O3-"+str(station.lower())+"_1hr_forecast_model"
+                best_model_alias = "champion"
+
+                best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+                best_model_run_id = best_model_info.run_id
+
+                with mlflow.start_run(run_id=best_model_run_id) as run:
+                    mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
+
+                #Rentrenar modelos, subirlos a mlflow
+
+
+            else:
+                print("Insertar nuevo normalizado")
+                #Query para insertar los valores normalizados 
+                queryInsert = f"""INSERT INTO {esquema}.{table_name}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
+                (\'{timenow.year}-{timenow.month}-{timenow.day}\', {df_escalado.loc[0,"CO"]}, {df_escalado.loc[0,"NO"]}, {df_escalado.loc[0,"NOX"]}, {df_escalado.loc[0,"NO2"]}, {df_escalado.loc[0,"O3"]}, {df_escalado.loc[0,"PM10"]}, {df_escalado.loc[0,"PM25"]}, {df_escalado.loc[0,"RH"]}, 
+                {df_escalado.loc[0,"SO2"]}, {df_escalado.loc[0,"TMP"]}, {df_escalado.loc[0,"WDR"]}, {df_escalado.loc[0,"WSP"]}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df_escalado.loc[0,"traffic"]});"""
+
+                queryInsert = queryInsert.replace("nan","\'nan\'")
+
+                print(queryInsert)
+
+                #ejecutamos insert
+                with engine.connect() as conn:
+                    conn.execute(text(queryInsert))
+                    conn.commit()
+                
+
+
+def upload_scalers_mlflow(stations2forecast):
+
+    for station in stations2forecast:
+
+        #Subir a modelo 1hr
+        model_name = "O3-"+str(station.lower())+"_24hr_forecast_model"
+        best_model_alias = "champion"
+
+        best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+        best_model_run_id = best_model_info.run_id
+
+        with mlflow.start_run(run_id=best_model_run_id) as run:
+            mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
+
+
+        #Subir a modelo 1hr
+        model_name = "O3-"+str(station.lower())+"_1hr_forecast_model"
+        best_model_alias = "champion"
+
+        best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+        best_model_run_id = best_model_info.run_id
+
+        with mlflow.start_run(run_id=best_model_run_id) as run:
+            mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
+        
 
 def consult_tables():
     # Conectar a la base de datos
