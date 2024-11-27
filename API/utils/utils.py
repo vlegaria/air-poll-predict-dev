@@ -1,6 +1,6 @@
 import requests
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import locale
 from config.config import TOMTOM_API_KEY, OPENWEATHER_API_KEY, DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_PORT
 import os
@@ -13,7 +13,7 @@ import mlflow
 from mlflow.tracking import MlflowClient
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 
-from predictor import *
+from utils.predictor import *
 
 #Cargar cliente mlfow
 mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")

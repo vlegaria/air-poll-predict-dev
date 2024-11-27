@@ -4,10 +4,18 @@ import requests
 from utils.utilsGob import *
 from utils.utils import *
 
+import subprocess
+
 
 stations2forecast = ['MER','UIZ']
 
 urlGob = "http://www.aire.cdmx.gob.mx/estadisticas-consultas/concentraciones/index.php"
+
+deltaDias = timedelta(days = 7)
+
+fechaUltimoEnt = date.today()
+
+fechaConsulta = fechaUltimoEnt + deltaDias
 
 while True:
 
@@ -15,6 +23,8 @@ while True:
     hora = str(hora_actual.hour)
     minuto = str(hora_actual.minute)
     print(hora,":", minuto)
+
+    fecha_actual = date.today()
 
     if int(minuto) % 15 == 0  and int(minuto) != 60:
 
@@ -42,10 +52,25 @@ while True:
             except Exception as e:
                 print("Ocurrió una excepción, no se pudieron calcular los promedios horarios:", e)
 
-        try:
-            norm_data_averages(stations2forecast, hora_actual)
-        except Exception as e:
-            print("Ocurrio un problema al normalizar los promedios horarios, ", e)
+        #try:
+        #    norm_data_averages(stations2forecast, hora_actual)
+        #except Exception as e:
+        #    print("Ocurrio un problema al normalizar los promedios horarios, ", e)
+
+        subprocess.Popen(['../../Webaire/Scripts/python.exe', 'norm_data.py']) #Se pone la ubicación de python.exe del Env, en caso que no se use entorno virtual se pone solo python
+    
+    if(hora == '3' and minuto == '0'):
+        if(fecha_actual == fechaConsulta):
+            fechaConsulta = fechaUltimoEnt + deltaDias
+
+            timesfuture = [1,24]
+
+            try: 
+                train_models(stations2forecast ,timesfuture, False)
+            except Exception as e:
+                print("Ocurrió una excepción, no se logro hacer entranamineto semanal", e)
+
+
 
     time.sleep(60)
             

@@ -1,4 +1,4 @@
-from config.config import TOMTOM_API_KEY, OPENWEATHER_API_KEY, DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_PORT
+from config.config import TOMTOM_API_KEY, OPENWEATHER_API_KEY, historical_data_1hrfuture, DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_PORT
 from sqlalchemy import create_engine, text
 import pandas as pd
 import numpy as np
@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import make_scorer, mean_squared_error, r2_score, mean_absolute_error
 from mlflow.tracking import MlflowClient
 from mlflow.models import infer_signature
-from config.config import MLFLOW_PROJECT, MLFLOW_PWD, MLFLOW_USER, historical_data_1hrfuture, RUTA_MODELOS
+from config.config import MLFLOW_PROJECT
 import mlflow
 
 class ozonePredictor():  
@@ -56,13 +56,13 @@ class ozonePredictor():
 
         #Para que es time_steps?
         Xs, ys = [], []
-        for i in range(len(X) - time_steps-int(self.time_future)):
+        for i in range(len(X) - time_steps-int(self.timeFuture)):
             df = X[i:(i + time_steps)]
             array = df.to_numpy()
             # Aplanar el array a un vector
             vector = array.flatten()
             Xs.append(vector)
-            ys.append(Y[i + time_steps+int(self.time_future)])
+            ys.append(Y[i + time_steps+int(self.timeFuture)])
         X_seq = np.array(Xs)
         y_seq = np.array(ys)
         # Dividir los datos en conjunto de entrenamiento y prueba
@@ -108,10 +108,6 @@ class ozonePredictor():
 
         print(self.metrics_results)
 
-        accuracy = accuracy_score(self.Ytest, YPred)
-
-        print("Accuracy:", accuracy)
-
 
     def implementExperimentMlflow(self,normalizado):
 
@@ -139,7 +135,7 @@ class ozonePredictor():
                 mlflow.log_params(params)
                 run_id = run.info.run_id
 
-                mlflow.log_artifact(f'ML/Scalers/{self.station}_scaler.pkl', artifact_path="artifacts")
+                mlflow.log_artifact(f'../ML/Scalers/{self.station}_scaler.pkl', artifact_path="artifacts")
 
                 # Log the loss metric
                 for metric_name, value in self.metrics_results.items():
@@ -239,6 +235,7 @@ class ozonePredictor():
                 best_model_run_id = best_model_info.run_id
                 # Acceder a las métricas del mejor modelo
                 best_metrics = client.get_run(best_model_run_id).data.metrics
+                print("metricas de modelo registrado " + best_metrics)
                 # Comparar las métricas del modelo actual con el mejor modelo hasta el momento
                 if self.metrics_results["r2adjusted"] > best_metrics["r2adjusted"] and self.metrics_results["rmse"] < best_metrics["rmse"]:
                     #Registra el nuevo modelo como el mejor
