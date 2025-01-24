@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-from config.config import DATABASE_PASSWORD
+from config.config import DATABASE_PASSWORD, DATABASE_NAME, DATABASE_USER
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,10 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9b0tx0a=3%a3#q(vfqoihz8^2d1-1y(!+w0@^)s1vc1hor*eky'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -82,9 +81,9 @@ DATABASES = {
 
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 
-        'NAME': 'calidadAire',
+        'NAME': DATABASE_NAME,
 
-        'USER': 'postgres',
+        'USER': DATABASE_USER,
 
         'PASSWORD': DATABASE_PASSWORD,
 
