@@ -3,6 +3,18 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy import text
 import numpy as np
+import mlflow
+from mlflow.tracking import MlflowClient
+import pickle
+import warnings
+from datetime import date
+
+# Ignorar todos los warnings
+warnings.filterwarnings("ignore")
+
+#Cargar cliente mlfow
+mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
+client = MlflowClient()
 import os
 
 #Conexión a la base de datos
@@ -71,7 +83,179 @@ def InsertarDatosEstaciones():
             conn.execute(text(query))
             conn.commit()
 
-InsertarDatosMer()
+def InsertarDatosMerHr():
+    mer = pd.read_csv('Datos/MER_prom_hr_sin_negativos.csv')
+
+    for ind in range(mer.shape[0]):
+
+        dateHour = mer.loc[ind, "date"]
+
+        #datos de fecha
+        dateHourSep = dateHour.split(" ")
+        date = dateHourSep[0]
+        time = dateHourSep[1]
+
+        dateSep = date.split("/")
+        year = dateSep[0]
+        month = int(dateSep[1])
+        day = int(dateSep[2])
+
+        timeSep = time.split(":")
+        hour = int(timeSep[0])
+        minute = int(timeSep[1])
+
+
+        #Query de insert
+        query = f"""INSERT INTO public."apicalidadaire_mer_prom_hr" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{year}-{dateSep[1]}-{dateSep[2]}\',
+                {mer.loc[ind, "CO"]},{mer.loc[ind, "NO"]},{mer.loc[ind, "NOX"]},{mer.loc[ind, "NO2"]},{mer.loc[ind, "O3"]},{mer.loc[ind, "PM10"]},{mer.loc[ind, "PM25"]},{mer.loc[ind, "RH"]},{mer.loc[ind, "SO2"]},{mer.loc[ind, "TMP"]},{mer.loc[ind, "WDR"]},{mer.loc[ind, "WSP"]},{year},{month},{day},{hour},{minute},{np.nan},0);"""
+
+        query = query.replace("nan","\'nan\'")
+
+        #print(query)
+        
+        #ejecutamos insert
+        with engine.connect() as conn:
+            conn.execute(text(query))
+            conn.commit()
+
+def InsertarDatosUizHr():
+    uiz = pd.read_csv('Datos/UIZ_prom_hr_sin_negativos.csv')
+
+    for ind in range(uiz.shape[0]):
+
+        dateHour = uiz.loc[ind, "date"]
+
+        #datos de fecha
+        dateHourSep = dateHour.split(" ")
+        date = dateHourSep[0]
+        time = dateHourSep[1]
+
+        dateSep = date.split("/")
+        year = dateSep[0]
+        month = int(dateSep[1])
+        day = int(dateSep[2])
+
+        timeSep = time.split(":")
+        hour = int(timeSep[0])
+        minute = int(timeSep[1])
+
+        #Query de insert
+        query = f"""INSERT INTO public."apicalidadaire_uiz_prom_hr" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{year}-{dateSep[1]}-{dateSep[2]}\',
+                {uiz.loc[ind, "CO"]},{uiz.loc[ind, "NO"]},{uiz.loc[ind, "NOX"]},{uiz.loc[ind, "NO2"]},{uiz.loc[ind, "O3"]},{uiz.loc[ind, "PM10"]},{uiz.loc[ind, "PM25"]},{uiz.loc[ind, "RH"]},{uiz.loc[ind, "SO2"]},{uiz.loc[ind, "TMP"]},{uiz.loc[ind, "WDR"]},{uiz.loc[ind, "WSP"]},{year},{month},{day},{hour},{minute},{np.nan},0);"""
+
+        query = query.replace("nan","\'nan\'")
+
+        #ejecutamos insert
+        with engine.connect() as conn:
+            conn.execute(text(query))
+            conn.commit()
+
+def NormDatosHr():
+    stations2forecast = ['mer','uiz']
+
+    for station in stations2forecast:
+
+        #Obtener scaler
+        model_name = "O3-"+str(station.lower())+"_24hr_forecast_model"
+        best_model_alias = "champion"
+
+        best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+        best_model_run_id = best_model_info.run_id
+
+        scaler_dir = 'artifacts/'+station.upper()+'_scaler.pkl'
+        local_path = mlflow.artifacts.download_artifacts(run_id=best_model_run_id, artifact_path=scaler_dir)
+
+        with open(local_path, "rb") as f:
+            scaler = pickle.load(f)
+
+        engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+        esquema = 'public'
+        
+
+        table_name = 'apicalidadaire_'+station+'_norm'
+
+        #Seleccionar registro mas nuevo norm
+        query = f"SELECT * FROM {esquema}.{table_name} order by date desc limit 1;"
+
+        dfnormReciente = pd.read_sql_query(query, engine)
+
+        #Seleccionar registro mas antiguo norm
+        query = f"SELECT * FROM {esquema}.{table_name} order by date limit 1;"
+
+        dfnormAnt= pd.read_sql_query(query, engine)
+        
+		# Recuperar los datos de la hora con fechas mayor a la mas nueva y menor a la mas antigua y cargar en un DataFrame
+        table_name = 'apicalidadaire_'+station+'_prom_hr'
+        query = f"SELECT * FROM {esquema}.{table_name} where date > '{dfnormReciente.iloc[0].date}' or date < '{dfnormAnt.iloc[0].date}';"
+        print(query)
+
+        dfHourFuera = pd.read_sql_query(query, engine)
+
+        #Normalizar datos 
+
+        if len(dfHourFuera)>0:
+
+            dfHourFuera_escalado = dfHourFuera.copy()
+
+            dfHourFuera_escalado[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = scaler.transform(dfHourFuera[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
+
+            #Probe y para los datos no es necesario el escalado, por lo que no contemplare ese caso al tratarse de una unica ejecución 
+
+            dfHourFuera_escalado = dfHourFuera_escalado.applymap(lambda x: "nan" if pd.isna(x) else x)
+
+            dfHourFuera_escalado = dfHourFuera_escalado.drop(columns=['idData'])
+
+            table_name = 'apicalidadaire_'+station+'_norm'
+
+            dfHourFuera_escalado.to_sql(table_name, engine, if_exists='append', method='multi', index=False)
+
+        # Recuperar los datos dentro de las fechas y cargar en un DataFrame
+        table_name = 'apicalidadaire_'+station+'_prom_hr'
+        query = f"SELECT * FROM {esquema}.{table_name} where not (date > '{dfnormReciente.iloc[0].date}' or date < '{dfnormAnt.iloc[0].date}');"
+        print(query)
+
+        dfHourDentro = pd.read_sql_query(query, engine)
+
+        if len(dfHourDentro)>0:
+
+            dfHourDentro_escalado = dfHourDentro.copy()
+
+            dfHourDentro_escalado[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = scaler.transform(dfHourDentro[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
+            
+            dfDatosNuevos = pd.DataFrame(columns=dfHourDentro.columns)
+
+            for ind in range(dfHourDentro_escalado.shape[0]):
+
+                #Buscar si ya existe un registro en norm con esa fecha y hora 
+
+                registroHour = dfHourDentro_escalado.iloc[ind]
+
+                table_name = 'apicalidadaire_'+station+'_norm'
+
+                query = f"SELECT * FROM {esquema}.{table_name} where date = '{registroHour.date}' and hour = {registroHour.hour}"
+
+                print(query)
+
+                dfnorm = pd.read_sql_query(query, engine)
+
+                if not len(dfnorm)>0:
+
+                    dfDatosNuevos = pd.concat([dfDatosNuevos,pd.DataFrame([registroHour])], ignore_index=True)
+
+            dfDatosNuevos = dfDatosNuevos.applymap(lambda x: "nan" if pd.isna(x) else x)
+
+            dfDatosNuevos = dfDatosNuevos.drop(columns=['idData'])
+
+            dfDatosNuevos.to_sql(table_name, engine, if_exists='append', method='multi', index=False)
+
+
+#InsertarDatosMer()
 #InsertarDatosUiz()
 
 #InsertarDatosEstaciones()
+
+#InsertarDatosMerHr()
+
+#InsertarDatosUizHr()
+
+NormDatosHr()
