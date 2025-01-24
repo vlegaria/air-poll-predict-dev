@@ -71,10 +71,10 @@ def nearest_street_requestGob(stations2forecast,printData):
             dato = dataofDay.loc[dataofDay['Hora'] == hour, station].values[0]
 
             if(dato != "nr"):
-                if float(dato) > 0:
+                if float(dato) >= 0:
                     contEstacion.loc[contEstacion['station'] == station, colEstation] = dato
                 else: 
-                    contEstacion.loc[contEstacion['station'] == station, colEstation] = 0
+                    contEstacion.loc[contEstacion['station'] == station, colEstation] = np.nan
             else: 
                 contEstacion.loc[contEstacion['station'] == station, colEstation] = np.nan
 
@@ -94,11 +94,11 @@ def nearest_street_requestGob(stations2forecast,printData):
 
         tableProm1h = f"apicalidadaire_{station.lower()}_prom_hr"
 
-        queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
+        queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic, contingency) VALUES 
             (\'{datetime_now}\', {contEstacion.loc[contEstacion['station'] == station,"CO"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"NO"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"NOX"].values[0]}, 
             {contEstacion.loc[contEstacion['station'] == station,"NO2"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"O3"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"PM10"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"PM25"].values[0]}, 
             {contEstacion.loc[contEstacion['station'] == station,"RH"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"SO2"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"TMP"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"WDR"].values[0]}, 
-            {contEstacion.loc[contEstacion['station'] == station,"WSP"].values[0]}, {year}, {month}, {day}, {hour}, 0, {contEstacion.loc[contEstacion['station'] == station,"traffic"].values[0]});"""
+            {contEstacion.loc[contEstacion['station'] == station,"WSP"].values[0]}, {year}, {month}, {day}, {hour}, 0, {contEstacion.loc[contEstacion['station'] == station,"traffic"].values[0]}, 0);"""
 
         #Dar formato a los nan para insertar en tabla
         queryInsert = queryInsert.replace("nan","\'nan\'")

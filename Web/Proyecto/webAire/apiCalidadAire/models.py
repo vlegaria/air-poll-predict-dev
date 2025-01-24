@@ -23,6 +23,7 @@ class PED_NORM(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=13, decimal_places=12, default='0.00')
+    contingency = models.IntegerField(default='0')
 
 class PED_NORM_24_CLASSIF(models.Model):
     idData = models.AutoField(primary_key=True)
@@ -69,6 +70,7 @@ class MER_NORM(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=13, decimal_places=12, default='0.00')
+    contingency = models.IntegerField(default='0')
 
 class MER_NORM_24_CLASSIF(models.Model):
     idData = models.AutoField(primary_key=True)
@@ -116,6 +118,7 @@ class UIZ_NORM(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=13, decimal_places=12,  default='0.00')
+    contingency = models.IntegerField(default='0')
 
 class UIZ_NORM_24_CLASSIF(models.Model):
     idData = models.AutoField(primary_key=True)
@@ -256,6 +259,7 @@ class PED_PROM_HR(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=16, decimal_places=6, default='0.00')
+    contingency = models.IntegerField(default='0')
 
 
 class MER_PROM_HR(models.Model):
@@ -279,6 +283,7 @@ class MER_PROM_HR(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=16, decimal_places=6, default='0.00')
+    contingency = models.IntegerField(default='0')
     
 
 class UIZ_PROM_HR(models.Model):
@@ -302,6 +307,8 @@ class UIZ_PROM_HR(models.Model):
     hour = models.IntegerField()
     minutes = models.IntegerField()
     traffic = models.DecimalField(max_digits=16, decimal_places=6,  default='0.00')
+    contingency = models.IntegerField(default='0')
+
 
 class EstatusCalidad(models.Model):
     idEstatus = models.AutoField(primary_key=True)
@@ -328,4 +335,20 @@ class Prediccion(models.Model):
     Estatus = models.ForeignKey(EstatusCalidad, on_delete=models.CASCADE, blank=False, null=False)
     fechaPrediccion = models.DateTimeField(auto_now_add=True)
 
-    
+class Contingencias(models.Model):
+    idContigencia = models.AutoField(primary_key=True)
+    contaminante = models.CharField(max_length=50, default="")
+    zona = models.CharField(max_length=50, default="")
+    valorDeActivacion = models.DecimalField(max_digits=7, decimal_places=3)
+    estacion = models.CharField(max_length=200, default="")
+    diaSemanaInicio = models.CharField(max_length=50, default="")
+    fechaActivacion = models.DateField()
+    horaInicio = models.CharField(max_length=50, default="")
+    valorMaximo = models.DecimalField(max_digits=7, decimal_places=3)
+    estacionDurante = models.CharField(max_length=200, default="")
+    fechaDurante = models.DateField()
+    horaDurante = models.CharField(max_length=50, default="")
+    fechaDesactivacion = models.DateField()
+    horaLevantamiento = models.CharField(max_length=50, default="")
+    valorDesactivacion = models.DecimalField(max_digits=7, decimal_places=3)
+    year = models.IntegerField()
