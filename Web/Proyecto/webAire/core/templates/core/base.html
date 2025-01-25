@@ -66,38 +66,38 @@
     {% if request.path != "/" %}<hr>{% endif %}
 
     <!-- Pié de página -->
-    <footer>
-        <div class="container">
-            <div class="text-center">
-                <img src="{% static 'core/img/CIC.jpg' %}" alt="IPN" style="width: 100px; height: auto; margin: 0 10px;">
-                <img src="{% static 'core/img/IPN.jpg' %}" alt="CIC" style="width: 100px; height: auto; margin: 0 10px;">
-                <img src="{% static 'core/img/UPIITA.jpg' %}" alt="UPIITA" style="width: 100px; height: auto; margin: 0 10px;">
-            </div>   
-            <div class="row">
-                <div class="col-lg-8 col-md-10 mx-auto">
-                    <ul class="list-inline text-center">
-                        <li class="list-inline-item">
-                            <a href="#">
-                                <span class="fa-stack fa-lg">
-                                    <i class="fa fa-circle fa-stack-2x"></i>
-                                    <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
-                                </span>
-                            </a>
-                        </li>
-                        <li class="list-inline-item">
-                            <a href="#">
-                                <span class="fa-stack fa-lg">
-                                    <i class="fa fa-circle fa-stack-2x"></i>
-                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
-                                </span>
-                            </a>
-                        </li>
-                    </ul>
-                    <p class="copyright text-muted">Copyright &copy; 2024 · Calidad del Aire</p>
-                </div>
+<footer>
+    <div class="container">
+        <div class="text-center">
+            <img src="{% static 'core/img/CIC.jpg' %}" alt="IPN" style="width: 100px; height: auto; margin: 0 10px;">
+            <img src="{% static 'core/img/IPN.jpg' %}" alt="CIC" style="width: 100px; height: auto; margin: 0 10px;">
+            <img src="{% static 'core/img/UPIITA.jpg' %}" alt="UPIITA" style="width: 100px; height: auto; margin: 0 10px;">
+        </div>   
+        <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="mailto:amagdasaldana@cic.ipn.mx">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/vlegaria/air-poll-predict-dev" target="_blank">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <p class="copyright text-muted">Copyright &copy; 2024 · Calidad del Aire</p>
             </div>
         </div>
-    </footer>
+    </div>
+</footer>
 
     <!-- Bootstrap y Javascripts -->
     <script src="{% static 'core/vendor/jquery/jquery.min.js' %}"></script>
