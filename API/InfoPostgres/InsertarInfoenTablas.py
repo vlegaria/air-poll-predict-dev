@@ -29,15 +29,16 @@ table_name = 'apicalidadaire_prediccion'
 def InsertarDatosMer():
     
     ruta_actual = os.path.dirname(os.path.abspath(__file__))
-    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_traffic_MER.csv')
+    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_traffic_MER_norm.csv')
     mer = pd.read_csv(ruta_csv)
     #mer = pd.read_csv('Datos/air_traffic_MER.csv')
 
     for ind in range(mer.shape[0]):
         
         #Query de insert
-        query = f'INSERT INTO public."apicalidadaire_mer_norm" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic) VALUES (\'{mer.loc[ind, "date"][0:10]}\',{mer.loc[ind, "CO"]},{mer.loc[ind, "NO"]},{mer.loc[ind, "NOX"]},{mer.loc[ind, "NO2"]},{mer.loc[ind, "O3"]},{mer.loc[ind, "PM10"]},{mer.loc[ind, "PM25"]},{mer.loc[ind, "RH"]},{mer.loc[ind, "SO2"]},{mer.loc[ind, "TMP"]},{mer.loc[ind, "WDR"]},{mer.loc[ind, "WSP"]},{mer.loc[ind, "year"]},{mer.loc[ind, "month"]},{mer.loc[ind, "day"]},{mer.loc[ind, "hour"]},{mer.loc[ind, "minute"]},{mer.loc[ind, "traffic"]});'
+        query = f'INSERT INTO public."apicalidadaire_mer_norm" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{mer.loc[ind, "date"][0:10]}\',{mer.loc[ind, "CO"]},{mer.loc[ind, "NO"]},{mer.loc[ind, "NOX"]},{mer.loc[ind, "NO2"]},{mer.loc[ind, "O3"]},{mer.loc[ind, "PM10"]},{mer.loc[ind, "PM25"]},{mer.loc[ind, "RH"]},{mer.loc[ind, "SO2"]},{mer.loc[ind, "TMP"]},{mer.loc[ind, "WDR"]},{mer.loc[ind, "WSP"]},{mer.loc[ind, "year"]},{mer.loc[ind, "month"]},{mer.loc[ind, "day"]},{mer.loc[ind, "hour"]},{mer.loc[ind, "minute"]},{mer.loc[ind, "traffic"]},0);'
         
+        query = query.replace("nan","\'nan\'")
         #ejecutamos insert
         with engine.connect() as conn:
             conn.execute(text(query))
@@ -46,23 +47,26 @@ def InsertarDatosMer():
 def InsertarDatosUiz():
     
     ruta_actual = os.path.dirname(os.path.abspath(__file__))
-    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_and_traffic_UIZ.csv')
+    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_traffic_UIZ_norm.csv')
     uiz = pd.read_csv(ruta_csv)
     #uiz = pd.read_csv('Datos/air_and_traffic_UIZ.csv')
 
     for ind in range(uiz.shape[0]):
 
         #Query de insert
-        query = f'INSERT INTO public."apicalidadaire_uiz_norm" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic) VALUES (\'{uiz.loc[ind, "date"][0:10]}\',{uiz.loc[ind, "CO"]},{uiz.loc[ind, "NO"]},{uiz.loc[ind, "NOX"]},{uiz.loc[ind, "NO2"]},{uiz.loc[ind, "O3"]},{uiz.loc[ind, "PM10"]},{uiz.loc[ind, "PM25"]},{uiz.loc[ind, "RH"]},{uiz.loc[ind, "SO2"]},{uiz.loc[ind, "TMP"]},{uiz.loc[ind, "WDR"]},{uiz.loc[ind, "WSP"]},{uiz.loc[ind, "year"]},{uiz.loc[ind, "month"]},{uiz.loc[ind, "day"]},{uiz.loc[ind, "hour"]},{uiz.loc[ind, "minute"]},{uiz.loc[ind, "traffic"]});'
+        query = f'INSERT INTO public."apicalidadaire_uiz_norm" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{uiz.loc[ind, "date"][0:10]}\',{uiz.loc[ind, "CO"]},{uiz.loc[ind, "NO"]},{uiz.loc[ind, "NOX"]},{uiz.loc[ind, "NO2"]},{uiz.loc[ind, "O3"]},{uiz.loc[ind, "PM10"]},{uiz.loc[ind, "PM25"]},{uiz.loc[ind, "RH"]},{uiz.loc[ind, "SO2"]},{uiz.loc[ind, "TMP"]},{uiz.loc[ind, "WDR"]},{uiz.loc[ind, "WSP"]},{uiz.loc[ind, "year"]},{uiz.loc[ind, "month"]},{uiz.loc[ind, "day"]},{uiz.loc[ind, "hour"]},{uiz.loc[ind, "minute"]},{uiz.loc[ind, "traffic"]},0);'
 
+        query = query.replace("nan","\'nan\'")
         #ejecutamos insert
         with engine.connect() as conn:
             conn.execute(text(query))
             conn.commit()
 
 def InsertarDatosEstaciones():
-    estaciones = pd.read_csv('Datos/estacionesCAME.csv')
-
+    #estaciones = pd.read_csv('Datos/estacionesCAME.csv')
+    ruta_actual = os.path.dirname(os.path.abspath(__file__))
+    ruta_csv = os.path.join(ruta_actual, 'Datos', 'estacionesCAME.csv')
+    estaciones = pd.read_csv(ruta_csv)
     for ind in range(estaciones.shape[0]):
         fecha = f'{estaciones.loc[ind, "date"][6:]}-{estaciones.loc[ind, "date"][3:5]}-{estaciones.loc[ind, "date"][:2]}'
 
@@ -119,10 +123,13 @@ def InsertarDatosMerHr():
             conn.commit()
 
 def InsertarDatosUizHr():
-    uiz = pd.read_csv('Datos/UIZ_prom_hr_sin_negativos.csv')
+    #uiz = pd.read_csv('Datos/UIZ_prom_hr_sin_negativos.csv')
+     
+    ruta_actual = os.path.dirname(os.path.abspath(__file__))
+    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_traffic_UIZ_prom.csv')
+    uiz = pd.read_csv(ruta_csv)
 
     for ind in range(uiz.shape[0]):
-
         dateHour = uiz.loc[ind, "date"]
 
         #datos de fecha
@@ -138,11 +145,9 @@ def InsertarDatosUizHr():
         timeSep = time.split(":")
         hour = int(timeSep[0])
         minute = int(timeSep[1])
-
         #Query de insert
         query = f"""INSERT INTO public."apicalidadaire_uiz_prom_hr" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{year}-{dateSep[1]}-{dateSep[2]}\',
                 {uiz.loc[ind, "CO"]},{uiz.loc[ind, "NO"]},{uiz.loc[ind, "NOX"]},{uiz.loc[ind, "NO2"]},{uiz.loc[ind, "O3"]},{uiz.loc[ind, "PM10"]},{uiz.loc[ind, "PM25"]},{uiz.loc[ind, "RH"]},{uiz.loc[ind, "SO2"]},{uiz.loc[ind, "TMP"]},{uiz.loc[ind, "WDR"]},{uiz.loc[ind, "WSP"]},{year},{month},{day},{hour},{minute},{np.nan},0);"""
-
         query = query.replace("nan","\'nan\'")
 
         #ejecutamos insert
@@ -249,8 +254,88 @@ def NormDatosHr():
             dfDatosNuevos.to_sql(table_name, engine, if_exists='append', method='multi', index=False)
 
 
+def InsertarDatosMerPROM():
+    
+    ruta_actual = os.path.dirname(os.path.abspath(__file__))
+    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_traffic_MER_prom.csv')
+    mer = pd.read_csv(ruta_csv)
+    #mer = pd.read_csv('Datos/air_traffic_MER.csv')
+
+    for ind in range(mer.shape[0]):
+        
+        #Query de insert
+        query = f'INSERT INTO public."apicalidadaire_mer_prom_hr" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{mer.loc[ind, "date"][0:10]}\',{mer.loc[ind, "CO"]},{mer.loc[ind, "NO"]},{mer.loc[ind, "NOX"]},{mer.loc[ind, "NO2"]},{mer.loc[ind, "O3"]},{mer.loc[ind, "PM10"]},{mer.loc[ind, "PM25"]},{mer.loc[ind, "RH"]},{mer.loc[ind, "SO2"]},{mer.loc[ind, "TMP"]},{mer.loc[ind, "WDR"]},{mer.loc[ind, "WSP"]},{mer.loc[ind, "year"]},{mer.loc[ind, "month"]},{mer.loc[ind, "day"]},{mer.loc[ind, "hour"]},{mer.loc[ind, "minute"]},{mer.loc[ind, "traffic"]},0);'
+        
+        query = query.replace("nan","\'nan\'")
+        #ejecutamos insert
+        with engine.connect() as conn:
+            conn.execute(text(query))
+            conn.commit()
+
+def InsertarDatosUizPROM():
+    
+    ruta_actual = os.path.dirname(os.path.abspath(__file__))
+    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_traffic_UIZ_prom.csv')
+    uiz = pd.read_csv(ruta_csv)
+    #uiz = pd.read_csv('Datos/air_and_traffic_UIZ.csv')
+
+    for ind in range(uiz.shape[0]):
+
+        #Query de insert
+        query = f'INSERT INTO public."apicalidadaire_uiz_prom_hr" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{uiz.loc[ind, "date"][0:10]}\',{uiz.loc[ind, "CO"]},{uiz.loc[ind, "NO"]},{uiz.loc[ind, "NOX"]},{uiz.loc[ind, "NO2"]},{uiz.loc[ind, "O3"]},{uiz.loc[ind, "PM10"]},{uiz.loc[ind, "PM25"]},{uiz.loc[ind, "RH"]},{uiz.loc[ind, "SO2"]},{uiz.loc[ind, "TMP"]},{uiz.loc[ind, "WDR"]},{uiz.loc[ind, "WSP"]},{uiz.loc[ind, "year"]},{uiz.loc[ind, "month"]},{uiz.loc[ind, "day"]},{uiz.loc[ind, "hour"]},{uiz.loc[ind, "minute"]},{uiz.loc[ind, "traffic"]},0);'
+
+        query = query.replace("nan","\'nan\'")
+        #ejecutamos insert
+        with engine.connect() as conn:
+            conn.execute(text(query))
+            conn.commit()
+
+
+
+def InsertarDatosMer15m():
+    
+    ruta_actual = os.path.dirname(os.path.abspath(__file__))
+    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_traffic_MER_prom.csv')
+    mer = pd.read_csv(ruta_csv)
+    #mer = pd.read_csv('Datos/air_traffic_MER.csv')
+
+    for ind in range(mer.shape[0]):
+        
+        #Query de insert
+        query = f'INSERT INTO public."apicalidadaire_mer_15m" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic) VALUES (\'{mer.loc[ind, "date"][0:10]}\',{mer.loc[ind, "CO"]},{mer.loc[ind, "NO"]},{mer.loc[ind, "NOX"]},{mer.loc[ind, "NO2"]},{mer.loc[ind, "O3"]},{mer.loc[ind, "PM10"]},{mer.loc[ind, "PM25"]},{mer.loc[ind, "RH"]},{mer.loc[ind, "SO2"]},{mer.loc[ind, "TMP"]},{mer.loc[ind, "WDR"]},{mer.loc[ind, "WSP"]},{mer.loc[ind, "year"]},{mer.loc[ind, "month"]},{mer.loc[ind, "day"]},{mer.loc[ind, "hour"]},{mer.loc[ind, "minute"]},{mer.loc[ind, "traffic"]});'
+        
+        query = query.replace("nan","\'nan\'")
+        #ejecutamos insert
+        with engine.connect() as conn:
+            conn.execute(text(query))
+            conn.commit()
+
+def InsertarDatosUiz15m():
+    
+    ruta_actual = os.path.dirname(os.path.abspath(__file__))
+    ruta_csv = os.path.join(ruta_actual, 'Datos', 'air_traffic_UIZ_prom.csv')
+    uiz = pd.read_csv(ruta_csv)
+    #uiz = pd.read_csv('Datos/air_and_traffic_UIZ.csv')
+
+    for ind in range(uiz.shape[0]):
+
+        #Query de insert
+        query = f'INSERT INTO public."apicalidadaire_uiz_15m" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic) VALUES (\'{uiz.loc[ind, "date"][0:10]}\',{uiz.loc[ind, "CO"]},{uiz.loc[ind, "NO"]},{uiz.loc[ind, "NOX"]},{uiz.loc[ind, "NO2"]},{uiz.loc[ind, "O3"]},{uiz.loc[ind, "PM10"]},{uiz.loc[ind, "PM25"]},{uiz.loc[ind, "RH"]},{uiz.loc[ind, "SO2"]},{uiz.loc[ind, "TMP"]},{uiz.loc[ind, "WDR"]},{uiz.loc[ind, "WSP"]},{uiz.loc[ind, "year"]},{uiz.loc[ind, "month"]},{uiz.loc[ind, "day"]},{uiz.loc[ind, "hour"]},{uiz.loc[ind, "minute"]},{uiz.loc[ind, "traffic"]});'
+
+        query = query.replace("nan","\'nan\'")
+        #ejecutamos insert
+        with engine.connect() as conn:
+            conn.execute(text(query))
+            conn.commit()
+
 #InsertarDatosMer()
-#InsertarDatosUiz()
+InsertarDatosUiz()
+
+#InsertarDatosMerPROM()
+InsertarDatosUizPROM()
+
+#InsertarDatosMer15m()
+InsertarDatosUiz15m()
 
 #InsertarDatosEstaciones()
 
@@ -258,4 +343,4 @@ def NormDatosHr():
 
 #InsertarDatosUizHr()
 
-NormDatosHr()
+#NormDatosHr()
