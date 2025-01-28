@@ -12,7 +12,10 @@ def table_data(table_name, target, station):
     table_name = 'apicalidadaire_'+station+'_norm'
     query = f"SELECT * FROM {esquema}.{table_name};"
     df = pd.read_sql_query(query, engine)
+    print(len(df))
     dates = df.date
+    df = df.dropna().reset_index(drop=True)
+    print(len(df))
     y = df[target]
     X = df.drop(columns=['idData', 'date', 'year', 'month', 'day', 'hour', 'minutes', 'NOX'])
     X = X.drop(columns=[target])
