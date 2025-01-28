@@ -12,9 +12,11 @@ from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import mlflow
 from mlflow.tracking import MlflowClient
-locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-
+import pytz
 from utils.predictor import *
+
+locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+tz_mexico = pytz.timezone('America/Mexico_City')
 
 #Cargar cliente mlfow
 mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
@@ -132,9 +134,9 @@ def get_hourly_averages(stations2forecast, timenow):
                             df.loc[ind, dato] = np.nan
         
                 #Query para insertar los promedios 
-            queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic, contingency) VALUES 
+            queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
             (\'{timenow.year}-{timenow.month}-{timenow.day}\', {df["CO"].mean()}, {df["NO"].mean()}, {df["NOX"].mean()}, {df["NO2"].mean()}, {df["O3"].mean()}, {df["PM10"].mean()}, {df["PM25"].mean()}, {df["RH"].mean()}, 
-            {df["SO2"].mean()}, {df["TMP"].mean()}, {df["WDR"].mean()}, {df["WSP"].mean()}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df["traffic"].mean()},0);"""
+            {df["SO2"].mean()}, {df["TMP"].mean()}, {df["WDR"].mean()}, {df["WSP"].mean()}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df["traffic"].mean()});"""
 
             print(queryInsert)
 
@@ -283,9 +285,9 @@ def norm_data_averages(stations2forecast, timenow):
             else:
                 print("Insertar nuevo normalizado")
                 #Query para insertar los valores normalizados 
-                queryInsert = f"""INSERT INTO {esquema}.{table_name}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic, contingency) VALUES 
+                queryInsert = f"""INSERT INTO {esquema}.{table_name}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
                 (\'{timenow.year}-{timenow.month}-{timenow.day}\', {df_escalado.loc[0,"CO"]}, {df_escalado.loc[0,"NO"]}, {df_escalado.loc[0,"NOX"]}, {df_escalado.loc[0,"NO2"]}, {df_escalado.loc[0,"O3"]}, {df_escalado.loc[0,"PM10"]}, {df_escalado.loc[0,"PM25"]}, {df_escalado.loc[0,"RH"]}, 
-                {df_escalado.loc[0,"SO2"]}, {df_escalado.loc[0,"TMP"]}, {df_escalado.loc[0,"WDR"]}, {df_escalado.loc[0,"WSP"]}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df_escalado.loc[0,"traffic"]}, 0);"""
+                {df_escalado.loc[0,"SO2"]}, {df_escalado.loc[0,"TMP"]}, {df_escalado.loc[0,"WDR"]}, {df_escalado.loc[0,"WSP"]}, {timenow.year}, {timenow.month}, {timenow.day}, {timenow.hour}, 0, {df_escalado.loc[0,"traffic"]});"""
 
                 queryInsert = queryInsert.replace("nan","\'nan\'")
 
