@@ -36,7 +36,7 @@ def InsertarDatosMer():
     for ind in range(mer.shape[0]):
         
         #Query de insert
-        query = f'INSERT INTO public."apicalidadaire_mer_norm" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{mer.loc[ind, "date"][0:10]}\',{mer.loc[ind, "CO"]},{mer.loc[ind, "NO"]},{mer.loc[ind, "NOX"]},{mer.loc[ind, "NO2"]},{mer.loc[ind, "O3"]},{mer.loc[ind, "PM10"]},{mer.loc[ind, "PM25"]},{mer.loc[ind, "RH"]},{mer.loc[ind, "SO2"]},{mer.loc[ind, "TMP"]},{mer.loc[ind, "WDR"]},{mer.loc[ind, "WSP"]},{mer.loc[ind, "year"]},{mer.loc[ind, "month"]},{mer.loc[ind, "day"]},{mer.loc[ind, "hour"]},{mer.loc[ind, "minute"]},{mer.loc[ind, "traffic"]},0);'
+        query = f'INSERT INTO public."apicalidadaire_mer_norm" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic) VALUES (\'{mer.loc[ind, "date"][0:10]}\',{mer.loc[ind, "CO"]},{mer.loc[ind, "NO"]},{mer.loc[ind, "NOX"]},{mer.loc[ind, "NO2"]},{mer.loc[ind, "O3"]},{mer.loc[ind, "PM10"]},{mer.loc[ind, "PM25"]},{mer.loc[ind, "RH"]},{mer.loc[ind, "SO2"]},{mer.loc[ind, "TMP"]},{mer.loc[ind, "WDR"]},{mer.loc[ind, "WSP"]},{mer.loc[ind, "year"]},{mer.loc[ind, "month"]},{mer.loc[ind, "day"]},{mer.loc[ind, "hour"]},{mer.loc[ind, "minute"]},{mer.loc[ind, "traffic"]});'
         
         query = query.replace("nan","\'nan\'")
         #ejecutamos insert
@@ -54,7 +54,7 @@ def InsertarDatosUiz():
     for ind in range(uiz.shape[0]):
 
         #Query de insert
-        query = f'INSERT INTO public."apicalidadaire_uiz_norm" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{uiz.loc[ind, "date"][0:10]}\',{uiz.loc[ind, "CO"]},{uiz.loc[ind, "NO"]},{uiz.loc[ind, "NOX"]},{uiz.loc[ind, "NO2"]},{uiz.loc[ind, "O3"]},{uiz.loc[ind, "PM10"]},{uiz.loc[ind, "PM25"]},{uiz.loc[ind, "RH"]},{uiz.loc[ind, "SO2"]},{uiz.loc[ind, "TMP"]},{uiz.loc[ind, "WDR"]},{uiz.loc[ind, "WSP"]},{uiz.loc[ind, "year"]},{uiz.loc[ind, "month"]},{uiz.loc[ind, "day"]},{uiz.loc[ind, "hour"]},{uiz.loc[ind, "minute"]},{uiz.loc[ind, "traffic"]},0);'
+        query = f'INSERT INTO public."apicalidadaire_uiz_norm" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic) VALUES (\'{uiz.loc[ind, "date"][0:10]}\',{uiz.loc[ind, "CO"]},{uiz.loc[ind, "NO"]},{uiz.loc[ind, "NOX"]},{uiz.loc[ind, "NO2"]},{uiz.loc[ind, "O3"]},{uiz.loc[ind, "PM10"]},{uiz.loc[ind, "PM25"]},{uiz.loc[ind, "RH"]},{uiz.loc[ind, "SO2"]},{uiz.loc[ind, "TMP"]},{uiz.loc[ind, "WDR"]},{uiz.loc[ind, "WSP"]},{uiz.loc[ind, "year"]},{uiz.loc[ind, "month"]},{uiz.loc[ind, "day"]},{uiz.loc[ind, "hour"]},{uiz.loc[ind, "minute"]},{uiz.loc[ind, "traffic"]});'
 
         query = query.replace("nan","\'nan\'")
         #ejecutamos insert
@@ -264,7 +264,7 @@ def InsertarDatosMerPROM():
     for ind in range(mer.shape[0]):
         
         #Query de insert
-        query = f'INSERT INTO public."apicalidadaire_mer_prom_hr" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{mer.loc[ind, "date"][0:10]}\',{mer.loc[ind, "CO"]},{mer.loc[ind, "NO"]},{mer.loc[ind, "NOX"]},{mer.loc[ind, "NO2"]},{mer.loc[ind, "O3"]},{mer.loc[ind, "PM10"]},{mer.loc[ind, "PM25"]},{mer.loc[ind, "RH"]},{mer.loc[ind, "SO2"]},{mer.loc[ind, "TMP"]},{mer.loc[ind, "WDR"]},{mer.loc[ind, "WSP"]},{mer.loc[ind, "year"]},{mer.loc[ind, "month"]},{mer.loc[ind, "day"]},{mer.loc[ind, "hour"]},{mer.loc[ind, "minute"]},{mer.loc[ind, "traffic"]},0);'
+        query = f'INSERT INTO public."apicalidadaire_mer_prom_hr" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic) VALUES (\'{mer.loc[ind, "date"][0:10]}\',{mer.loc[ind, "CO"]},{mer.loc[ind, "NO"]},{mer.loc[ind, "NOX"]},{mer.loc[ind, "NO2"]},{mer.loc[ind, "O3"]},{mer.loc[ind, "PM10"]},{mer.loc[ind, "PM25"]},{mer.loc[ind, "RH"]},{mer.loc[ind, "SO2"]},{mer.loc[ind, "TMP"]},{mer.loc[ind, "WDR"]},{mer.loc[ind, "WSP"]},{mer.loc[ind, "year"]},{mer.loc[ind, "month"]},{mer.loc[ind, "day"]},{mer.loc[ind, "hour"]},{mer.loc[ind, "minute"]},{mer.loc[ind, "traffic"]});'
         
         query = query.replace("nan","\'nan\'")
         #ejecutamos insert
@@ -282,7 +282,7 @@ def InsertarDatosUizPROM():
     for ind in range(uiz.shape[0]):
 
         #Query de insert
-        query = f'INSERT INTO public."apicalidadaire_uiz_prom_hr" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic, contingency) VALUES (\'{uiz.loc[ind, "date"][0:10]}\',{uiz.loc[ind, "CO"]},{uiz.loc[ind, "NO"]},{uiz.loc[ind, "NOX"]},{uiz.loc[ind, "NO2"]},{uiz.loc[ind, "O3"]},{uiz.loc[ind, "PM10"]},{uiz.loc[ind, "PM25"]},{uiz.loc[ind, "RH"]},{uiz.loc[ind, "SO2"]},{uiz.loc[ind, "TMP"]},{uiz.loc[ind, "WDR"]},{uiz.loc[ind, "WSP"]},{uiz.loc[ind, "year"]},{uiz.loc[ind, "month"]},{uiz.loc[ind, "day"]},{uiz.loc[ind, "hour"]},{uiz.loc[ind, "minute"]},{uiz.loc[ind, "traffic"]},0);'
+        query = f'INSERT INTO public."apicalidadaire_uiz_prom_hr" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic) VALUES (\'{uiz.loc[ind, "date"][0:10]}\',{uiz.loc[ind, "CO"]},{uiz.loc[ind, "NO"]},{uiz.loc[ind, "NOX"]},{uiz.loc[ind, "NO2"]},{uiz.loc[ind, "O3"]},{uiz.loc[ind, "PM10"]},{uiz.loc[ind, "PM25"]},{uiz.loc[ind, "RH"]},{uiz.loc[ind, "SO2"]},{uiz.loc[ind, "TMP"]},{uiz.loc[ind, "WDR"]},{uiz.loc[ind, "WSP"]},{uiz.loc[ind, "year"]},{uiz.loc[ind, "month"]},{uiz.loc[ind, "day"]},{uiz.loc[ind, "hour"]},{uiz.loc[ind, "minute"]},{uiz.loc[ind, "traffic"]});'
 
         query = query.replace("nan","\'nan\'")
         #ejecutamos insert
