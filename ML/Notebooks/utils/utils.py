@@ -15,7 +15,6 @@ def table_data(table_name, target, station):
     print(len(df))
     dates = df.date
     df = df.dropna().reset_index(drop=True)
-    print(len(df))
     y = df[target]
     X = df.drop(columns=['idData', 'date', 'year', 'month', 'day', 'hour', 'minutes', 'NOX'])
     X = X.drop(columns=[target])
