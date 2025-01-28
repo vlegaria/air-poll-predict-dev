@@ -6,14 +6,9 @@ from mlflow.tracking import MlflowClient
 from mlflow.models import infer_signature
 import mlflow.sklearn
 import mlflow.pyfunc
-from sklearn.preprocessing import MinMaxScaler
 from config.config import MLFLOW_PROJECT, MLFLOW_PWD, MLFLOW_USER, historical_data_1hrfuture, RUTA_MODELOS
-from sklearn.pipeline import Pipeline
-import utils.utils
 from utils.utils import *
 from sklearn.model_selection import train_test_split
-import pandas as pd
-import pyspark
 
 mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
 client = MlflowClient()
