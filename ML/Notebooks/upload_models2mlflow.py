@@ -23,8 +23,8 @@ for time_future in times_future:
     for station in stations:
         print(station)
         # Se carga el archivo de los modelos y del scaler por cada estacion, el target, y el tiempo a predecir
-        model_dir = RUTA_MODELOS+'root/web/air-poll-predict-dev/ML/Modelos/best_model_XGBoost_'+str(time_steps)+'timesteps_O3_'+str(time_future)+'timefuture_'+station+'.pkl'
-        model_dir = RUTA_MODELOS+'air-poll-predict-dev/ML/Modelos/best_model_XGBoost_'+str(time_steps)+'timesteps_O3_'+str(time_future)+'timefuture_'+station+'.pkl'
+        #model_dir = RUTA_MODELOS+'root/web/air-poll-predict-dev/ML/Modelos/best_model_XGBoost_'+str(time_steps)+'timesteps_O3_'+str(time_future)+'timefuture_'+station+'.pkl'
+        #model_dir = RUTA_MODELOS+'air-poll-predict-dev/ML/Modelos/best_model_XGBoost_'+str(time_steps)+'timesteps_O3_'+str(time_future)+'timefuture_'+station+'.pkl'
         model_dir = 'best_model_XGBoost_'+str(time_steps)+'timesteps_O3_'+str(time_future)+'timefuture_'+station+'.pkl'
         # Obtener la ruta absoluta del script actual
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -37,7 +37,7 @@ for time_future in times_future:
         loaded_model = joblib.load(model_dir)
         #dir_scaler = RUTA_MODELOS+'air-poll-predict-dev/ML/Scalers/'+station+'_scaler.pkl'
         dir_scaler = station+'_scaler.pkl'
-        ruta_archivo = os.path.join(script_dir, "..", "Scaler", model_dir)
+        ruta_archivo = os.path.join(script_dir, "..", "Scalers", dir_scaler)
         # Convertir la ruta en absoluta (para evitar problemas)
         dir_scaler = os.path.abspath(ruta_archivo)
         with open(dir_scaler, 'rb') as file:
