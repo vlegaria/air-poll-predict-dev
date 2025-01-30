@@ -35,8 +35,11 @@ for time_future in times_future:
         print(model_dir)
 
         loaded_model = joblib.load(model_dir)
-        #dir_scaler = RUTA_MODELOS+'root/web/air-poll-predict-dev/ML/Scalers/'+station+'_scaler.pkl'
-        dir_scaler = RUTA_MODELOS+'air-poll-predict-dev/ML/Scalers/'+station+'_scaler.pkl'
+        #dir_scaler = RUTA_MODELOS+'air-poll-predict-dev/ML/Scalers/'+station+'_scaler.pkl'
+        dir_scaler = station+'_scaler.pkl'
+        ruta_archivo = os.path.join(script_dir, "..", "Scaler", model_dir)
+        # Convertir la ruta en absoluta (para evitar problemas)
+        dir_scaler = os.path.abspath(ruta_archivo)
         with open(dir_scaler, 'rb') as file:
             loaded_scaler = pickle.load(file)
 
