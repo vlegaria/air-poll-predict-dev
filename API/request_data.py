@@ -37,7 +37,7 @@ while True:
             
 
     
-    if int(minuto) == 24:
+    if int(minuto) == 55:
 
         #Verificamos si la pagina del gobierno esta caida y si es asi consultamos en Api
         response = requests.get(urlGob)
