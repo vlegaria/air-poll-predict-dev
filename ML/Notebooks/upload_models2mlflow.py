@@ -21,8 +21,10 @@ for time_future in times_future:
     for station in stations:
         print(station)
         # Se carga el archivo de los modelos y del scaler por cada estacion, el target, y el tiempo a predecir
+        model_dir = RUTA_MODELOS+'root/web/air-poll-predict-dev/ML/Modelos/best_model_XGBoost_'+str(time_steps)+'timesteps_O3_'+str(time_future)+'timefuture_'+station+'.pkl'
         model_dir = RUTA_MODELOS+'air-poll-predict-dev/ML/Modelos/best_model_XGBoost_'+str(time_steps)+'timesteps_O3_'+str(time_future)+'timefuture_'+station+'.pkl'
         loaded_model = joblib.load(model_dir)
+        dir_scaler = RUTA_MODELOS+'root/web/air-poll-predict-dev/ML/Scalers/'+station+'_scaler_O3.pkl'
         dir_scaler = RUTA_MODELOS+'air-poll-predict-dev/ML/Scalers/'+station+'_scaler_O3.pkl'
         with open(dir_scaler, 'rb') as file:
             loaded_scaler = pickle.load(file)
