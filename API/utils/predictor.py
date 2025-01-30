@@ -43,17 +43,18 @@ class ozonePredictor():
         #Quitar filas con NaN
         
         df = df.dropna()
-
+        df = df.dropna().reset_index(drop=True)
         Y = df['O3']    
 
         if(self.timeFuture == 1):
 
-            X = df.drop(columns=['idData', 'date', 'month', 'day', 'year', 'minutes', 'contingency', 'O3'])
+            #X = df.drop(columns=['idData', 'date', 'month', 'day', 'year', 'minutes', 'contingency', 'O3'])
+            X = df.drop(columns=['idData', 'date', 'month', 'day', 'year', 'minutes', 'O3'])
 
         if(self.timeFuture == 24):
 
-            X = df.drop(columns=['idData', 'date', 'year', 'minutes', 'contingency', 'O3'])
-
+            #X = df.drop(columns=['idData', 'date', 'year', 'minutes', 'contingency', 'O3'])
+            X = df.drop(columns=['idData', 'date', 'year', 'minutes', 'O3'])
         #Para que es time_steps?
         Xs, ys = [], []
         for i in range(len(X) - time_steps-int(self.timeFuture)):

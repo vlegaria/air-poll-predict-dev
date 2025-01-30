@@ -4,16 +4,19 @@ from sqlalchemy import create_engine, text
 import requests
 import pandas as pd
 import numpy as np
-
-
+import locale
+import pytz
 
 #Datos bbdd
 engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
 esquema = 'public'
 
+locale.setlocale(locale.LC_TIME, 'es_MX.UTF-8')
+tz_mexico = pytz.timezone('America/Mexico_City')
+
 def nearest_street_requestGob(stations2forecast,printData):
 
-    datetime_now = datetime.now()
+    datetime_now = datetime.now(tz_mexico)
     year = str(datetime_now.year)
     date_df = datetime_now.strftime('%Y-%m-%d')
     year = str(datetime_now.year)
@@ -27,7 +30,7 @@ def nearest_street_requestGob(stations2forecast,printData):
     monthText = f'0{month}' if len(str(month))  == 1 else str(month)
     dateData = f'{dayText}-{monthText}-{year}'
     
-    claveCont = ['nox','so2','co','nox','no2','no','o3','pm10','pm2','wsp','wdr','tmp','rh']
+    claveCont = ['co','no','nox','no2','o3','pm10','pm2','rh','so2','tmp','wdr','wsp']
 
     #Crear dataframe vacio por estacion
 
@@ -67,8 +70,11 @@ def nearest_street_requestGob(stations2forecast,printData):
 
         for station in stations2forecast:
             dataofDay = df_datos.loc[df_datos['Fecha'] == dateData, ["Hora",station]]
-
-            dato = dataofDay.loc[dataofDay['Hora'] == hour, station].values[0]
+            dato = dataofDay.loc[dataofDay['Hora'] == hour, station]
+            if len(dato)==0:
+                dato = "nr"
+            else:
+                dato = dato.values[0]
 
             if(dato != "nr"):
                 if float(dato) >= 0:
@@ -77,9 +83,7 @@ def nearest_street_requestGob(stations2forecast,printData):
                     contEstacion.loc[contEstacion['station'] == station, colEstation] = np.nan
             else: 
                 contEstacion.loc[contEstacion['station'] == station, colEstation] = np.nan
-
-    
-
+    print("Datos gob")
     #Obtener trafico de Api
 
     for station in stations2forecast:
@@ -94,11 +98,11 @@ def nearest_street_requestGob(stations2forecast,printData):
 
         tableProm1h = f"apicalidadaire_{station.lower()}_prom_hr"
 
-        queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic, contingency) VALUES 
+        queryInsert = f"""INSERT INTO {esquema}.{tableProm1h}( date, \"CO\", \"NO\", \"NOX\", \"NO2\", \"O3\", \"PM10\", \"PM25\", \"RH\", \"SO2\", \"TMP\", \"WDR\", \"WSP\", year, month, day, hour, minutes, traffic) VALUES 
             (\'{datetime_now}\', {contEstacion.loc[contEstacion['station'] == station,"CO"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"NO"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"NOX"].values[0]}, 
             {contEstacion.loc[contEstacion['station'] == station,"NO2"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"O3"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"PM10"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"PM25"].values[0]}, 
             {contEstacion.loc[contEstacion['station'] == station,"RH"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"SO2"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"TMP"].values[0]}, {contEstacion.loc[contEstacion['station'] == station,"WDR"].values[0]}, 
-            {contEstacion.loc[contEstacion['station'] == station,"WSP"].values[0]}, {year}, {month}, {day}, {hour}, 0, {contEstacion.loc[contEstacion['station'] == station,"traffic"].values[0]}, 0);"""
+            {contEstacion.loc[contEstacion['station'] == station,"WSP"].values[0]}, {year}, {month}, {day}, {hour}, 0, {contEstacion.loc[contEstacion['station'] == station,"traffic"].values[0]});"""
 
         #Dar formato a los nan para insertar en tabla
         queryInsert = queryInsert.replace("nan","\'nan\'")

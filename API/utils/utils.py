@@ -53,7 +53,7 @@ def nearest_street_request(stations2forecast,printData):
         otro_intento = True
         for intentos in range(3):
             if otro_intento ==True:
-                url_openweathermap = 'http://api.openweathermap.org/data/2.5/air_pollution?lat='+str(lat)+'&lon='+str(lon)+'&appid='+ OPENWEATHER_API_KEY
+                url_openweathermap = 'http://api.openweathermap.org/data/2.5/air_pollution?lat='+str(lat)+'&lon='+str(lon)+'&appid='+ OPENWEATHER_API_KEY+'&units=metric'
                 response = requests.get(url_openweathermap)
                 if response.status_code == 200:
                     data_openweather = response.json()
@@ -96,8 +96,19 @@ def nearest_street_request(stations2forecast,printData):
         day = str(datetime_now.day)
         hour = str(datetime_now.hour)
         minute= str(datetime_now.minute)
-        values = [date_df, CO, NO, 0, NO2, O3, PM10, PM25, RH, SO2, TMP, WDR, WSP, year, month, day, hour, minute,TRFC]
 
+        TMP = TMP - 273.15
+        Vmolar = 24.45  # Volumen molar en L/mol (a 25°C y 1 atm)
+        CO = (CO * Vmolar / 28.01) /1000 #ppm
+        NO = NO * Vmolar / 30.01 #ppb
+        NOX = (NO +NO2)/2
+        NOX = NOX * Vmolar / 38.01  #ppb
+        NO2 = NO2 * Vmolar / 46.01 # ppb
+        O3 = O3 * Vmolar / 48.00 #ppb
+        SO2 = SO2 * Vmolar / 64.07#ppb
+
+        values = [date_df, CO, NO, NOX, NO2, O3, PM10, PM25, RH, SO2, TMP, WDR, WSP, year, month, day, hour, minute,TRFC]
+        print(values)
         print(station, "successful request")
 
 
@@ -157,7 +168,7 @@ def norm_data_averages(stations2forecast, timenow):
         # Recuperar los datos de la hora y cargar en un DataFrame
         table_name = 'apicalidadaire_'+station+'_prom_hr'
         query = f"SELECT * FROM {esquema}.{table_name} WHERE date = '{timenow.year}-{timenow.month}-{timenow.day}' and hour = {timenow.hour};"
-        print(query)
+        #print(query)
         df = pd.read_sql_query(query, engine)
 
         if len(df)>0:
