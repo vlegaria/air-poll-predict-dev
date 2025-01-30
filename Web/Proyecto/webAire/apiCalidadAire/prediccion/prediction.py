@@ -10,7 +10,7 @@ import json
 #with open('apicalidadaire/prediccion/recomendations.json', 'r') as archivo_json:
 #    recomendations = json.load(archivo_json)
 
-mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
+mlflow.set_tracking_uri(uri="http://0.0.0.0:5000")
 client = MlflowClient()
 
 def prediction(idStation, time1hr, idTarget):
@@ -40,8 +40,12 @@ def prediction(idStation, time1hr, idTarget):
     # Abrir el archivo .pkl descargado
     with open(local_path, "rb") as f:
         scaler = pickle.load(f)
-    norm_predictions = norm_predictions.reshape(-1, 1)
-    predictions = scaler.inverse_transform(norm_predictions)
+    #norm_predictions = norm_predictions.reshape(-1, 1)
+    #predictions = scaler.inverse_transform(norm_predictions)    
+    min_val = scaler.data_min_[4]  # Valor mínimo del O3
+    max_val = scaler.data_max_[4]  # Valor máximo del O3
+    # Aplicar la transformación inversa 
+    predictions = norm_predictions * (max_val - min_val) + min_val
     ozone_value = round(float(predictions),4)
 
     estatus = 0
