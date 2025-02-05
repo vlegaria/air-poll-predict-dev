@@ -15,11 +15,11 @@ from mlflow.tracking import MlflowClient
 import pytz
 from utils.predictor import *
 
-locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+locale.setlocale(locale.LC_TIME, 'es_MX.UTF-8')
 tz_mexico = pytz.timezone('America/Mexico_City')
 
 #Cargar cliente mlfow
-mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
+mlflow.set_tracking_uri(uri="http://0.0.0.0:5000")
 client = MlflowClient()
 
 

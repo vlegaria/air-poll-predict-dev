@@ -1,0 +1,21 @@
+FROM python:3.10.9
+
+RUN mkdir /API
+
+WORKDIR /API
+COPY . /API
+
+RUN apt-get update \
+    && apt-get install -y locales \
+    && sed -i '/es_MX.UTF-8/s/^# //g' /etc/locale.gen \
+    && locale-gen es_MX.UTF-8 \
+    && pip install --upgrade pip  \
+    && pip install -r requirements.txt
+
+    
+ENV LANG es_MX.UTF-8  
+ENV LANGUAGE es_MX:es  
+ENV LC_ALL es_MX.UTF-8
+
+CMD ["python", "request_data.py"]
+#ENTRYPOINT python request_data.py
