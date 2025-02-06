@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from apicalidadaire.models import *
 from apicalidadaire.serializers import *
+import traceback
 
 import os
 
@@ -40,8 +41,8 @@ class prediccion(APIView):
 
             return Response(prediccionSerializer.data,status=status.HTTP_200_OK)
 
-        except Exception as e:
-            print("Ocurrió un error:", e)
+        except Exception:
+            print(traceback.format_exc())
 
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
