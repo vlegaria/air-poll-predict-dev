@@ -59,7 +59,7 @@ while True:
         #except Exception as e:
         #    print("Ocurrio un problema al normalizar los promedios horarios, ", e)
         #subprocess.Popen(['../../Webaire/Scripts/python.exe', 'norm_data.py']) #Se pone la ubicación de python.exe del Env, en caso que no se use entorno virtual se pone solo python
-        subprocess.Popen(['python', 'norm_data.py']) #Se pone la ubicación de python.exe del Env, en caso que no se use entorno virtual se pone solo python
+        subprocess.Popen(['python3', 'norm_data.py']) #Se pone la ubicación de python.exe del Env, en caso que no se use entorno virtual se pone solo python
     
     if(hora == '3' and minuto == '0'):
         if(fecha_actual == fechaConsulta):
