@@ -47,7 +47,8 @@ def prediction(idStation, time1hr, idTarget):
         norm_predictions = best_model.predict(data)
         print("Aplica predicción")
         artifacts = client.list_artifacts(best_model_run_id, path="artifacts")
-        scaler_dir = 'artifacts/'+station.upper()+'_scaler_'+target+'.pkl'
+        #scaler_dir = 'artifacts/'+station.upper()+'_scaler_'+target+'.pkl'
+        scaler_dir = 'artifacts/'+station.upper()+'_scaler.pkl'
         local_path = mlflow.artifacts.download_artifacts(run_id=best_model_run_id, artifact_path=scaler_dir)
         # Abrir el archivo .pkl descargado
         with open(local_path, "rb") as f:
