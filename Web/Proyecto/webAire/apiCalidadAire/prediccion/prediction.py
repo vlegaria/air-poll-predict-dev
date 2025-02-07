@@ -11,7 +11,7 @@ import traceback
 #with open('apicalidadaire/prediccion/recomendations.json', 'r') as archivo_json:
 #    recomendations = json.load(archivo_json)
 
-mlflow.set_tracking_uri(uri="0.0.0.0:5000")
+mlflow.set_tracking_uri(uri="http://0.0.0.0:5000")
 client = MlflowClient()
 
 def prediction(idStation, time1hr, idTarget):
@@ -37,6 +37,7 @@ def prediction(idStation, time1hr, idTarget):
         best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
         best_model_version = best_model_info.version
         best_model_run_id = best_model_info.run_id
+        print("Carga el modelo correctamente")
         station = station.upper()
         target = selectTarget(idTarget).loc[0, 'Contaminante']
         time_steps = 24
@@ -44,6 +45,7 @@ def prediction(idStation, time1hr, idTarget):
         X, y, df, dates = table_data(table_name, target, station)
         data = ingest(df, target, time_steps)
         norm_predictions = best_model.predict(data)
+        print("Aplica predicción")
         artifacts = client.list_artifacts(best_model_run_id, path="artifacts")
         scaler_dir = 'artifacts/'+station.upper()+'_scaler_'+target+'.pkl'
         local_path = mlflow.artifacts.download_artifacts(run_id=best_model_run_id, artifact_path=scaler_dir)
