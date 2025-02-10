@@ -15,13 +15,13 @@ def table_data(table_name, target, station):
     df = pd.read_sql_query(query, engine)
     dates = df.date
     y = df[target]
-    X = df.drop(columns=['idData', 'date', 'year', 'month', 'day', 'hour', 'minutes', 'NOX'])
+    X = df.drop(columns=['idData', 'date', 'year', 'day','minutes', 'SO2'])
     X = X.drop(columns=[target])
     return X, y, df, dates
 
 def ingest(df, target, time_steps):
     df = df.tail(time_steps)
-    X = df.drop(columns=['idData', 'date', 'year', 'month', 'day', 'hour', 'minutes', 'NOX'])
+    X = df.drop(columns=['idData', 'date', 'year', 'day', 'minutes', 'SO2'])
     X = X.drop(columns=[target])
     array = X.to_numpy()
     vector = array.flatten()

@@ -16,13 +16,15 @@ def table_data(table_name, target, station):
     dates = df.date
     df = df.dropna().reset_index(drop=True)
     y = df[target]
-    X = df.drop(columns=['idData', 'date', 'year', 'month', 'day', 'hour', 'minutes', 'NOX'])
+    #X = df.drop(columns=['idData', 'date', 'year', 'month', 'day', 'hour', 'minutes', 'NOX'])
+    X = df.drop(columns=['idData', 'date', 'year', 'day', 'minutes', 'SO2'])
     X = X.drop(columns=[target])
     return X, y, df, dates
 
 def ingest(df, target, time_steps):
     df = df.tail(time_steps)
-    X = df.drop(columns=['idData', 'date', 'year', 'month', 'day', 'hour', 'minutes', 'NOX'])
+    #X = df.drop(columns=['idData', 'date', 'year', 'month', 'day', 'hour', 'minutes', 'NOX'])
+    X = df.drop(columns=['idData', 'date', 'year', 'day', 'minutes', 'SO2'])
     X = X.drop(columns=[target])
     array = X.to_numpy()
     vector = array.flatten()
