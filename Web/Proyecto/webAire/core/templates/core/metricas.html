@@ -1,0 +1,194 @@
+{% extends 'core/base.html' %}
+{% block title %}Metricas {% endblock %}
+
+{%block background%}{%load static%}{%static 'core/img/portfolio-bg.jpg'%}{%endblock%}
+
+{% block content %}
+<style>
+    .table-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        padding: 10px;
+        caption-side: bottom; 
+        text-align: center;
+    }
+</style>
+<style>
+#chart_div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+  }
+</style>
+</p><style type="text/css">
+    .tg  {border-collapse:collapse;border-color:#ccc;border-spacing:0;}
+    .tg td{background-color:#fff;border-color:#ccc;border-style:solid;border-width:0px;color:#333;
+      font-family:Arial, sans-serif;font-size:14px;overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg th{background-color:#f0f0f0;border-color:#ccc;border-style:solid;border-width:0px;color:#333;
+      font-family:Arial, sans-serif;font-size:14px;font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg .tg-baqh{text-align:center;vertical-align:top}
+    .tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+    </style>
+
+<div class="col-lg-8 col-md-10 mx-auto"  style="text-align: justify; color: black;">
+    <h1> Métricas de los modelos  </h1>
+    <p> Las estimaciones de los contaminantes atmosféricos se realizan con un modelo XGBoost en su version de regresor.
+        El modelo se reentrena automaticamente con los datos recopilados de ese día y se actualiza solo sí se mejoran las métricas del modelo anterior (modelo en producción).
+        <p></p>
+        <p>En la tabla 1 se muestra las métricas del modelo actual para el pronóstico de la siguiente hora:</p>
+        <p> </p>
+            <table class="tg" style="table-layout: fixed; width: 372px; margin:auto"><colgroup>
+                <caption class="table-title"> Tabla 1.</caption>
+            <col style="width: 78px">
+            <col style="width: 78px">
+            <col style="width: 78px">
+            <col style="width: 78px">
+            <col style="width: 78px">
+            <col style="width: 78px">
+            <col style="width: 78px">
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="tg-c3ow"></th>
+                <th class="tg-c3ow" colspan="3">Con tráfico</th>
+                <th class="tg-baqh" colspan="3">Sin tráfico</th>
+              </tr></thead>
+            <tbody>
+              <tr>
+                <td class="tg-baqh">Métricas</td>
+                <td class="tg-baqh">R2</td>
+                <td class="tg-baqh">R2-adj</td>
+                <td class="tg-baqh">RMSE<p>(ppb)</p></td>
+                <td class="tg-baqh">R2</td>
+                <td class="tg-baqh">R2-adj</td>
+                <td class="tg-baqh">RMSE<p>(ppb)</p></td>
+              </tr>
+              <tr>
+                <td class="tg-baqh">MER</td>
+                <td class="tg-baqh">0.821712</td>
+                <td class="tg-baqh">0.677976</td>
+                <td class="tg-baqh">12.247256</td>
+                <td class="tg-baqh">0.817348</td>
+                <td class="tg-baqh">0.689358</td>
+                <td class="tg-baqh">12.396251</td>
+              </tr>
+              <tr>
+                <td class="tg-baqh">UIZ</td>
+                <td class="tg-baqh">0.801033</td>
+                <td class="tg-baqh">0.586971</td>
+                <td class="tg-baqh">13.184089</td>
+                <td class="tg-baqh">0.793360</td>
+                <td class="tg-baqh">0.603830</td>
+                <td class="tg-baqh">13.435895</td>
+              </tr>
+            </tbody>
+            </table>
+            <p></p>
+
+
+            <p>En la tabla 2 se muestra las métricas del modelo actual para el pronóstico del día siguiente:</p>
+            <p> </p>
+            <p> </p>
+                <table class="tg" style="table-layout: fixed; width: 372px; margin:auto"><colgroup>
+                    <caption class="table-title"> Tabla 2.</caption>
+                <col style="width: 78px">
+                <col style="width: 78px">
+                <col style="width: 78px">
+                <col style="width: 78px">
+                <col style="width: 78px">
+                <col style="width: 78px">
+                <col style="width: 78px">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th class="tg-c3ow"></th>
+                    <th class="tg-c3ow" colspan="3">Con tráfico</th>
+                    <th class="tg-baqh" colspan="3">Sin tráfico</th>
+                  </tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="tg-baqh">Métricas</td>
+                    <td class="tg-baqh">R2</td>
+                    <td class="tg-baqh">R2-adj</td>
+                    <td class="tg-baqh">RMSE<p>(ppb)</p></td>
+                    <td class="tg-baqh">R2</td>
+                    <td class="tg-baqh">R2-adj</td>
+                    <td class="tg-baqh">RMSE<p>(ppb)</p></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-baqh">MER</td>
+                    <td class="tg-baqh">0.581322</td>
+                    <td class="tg-baqh">0.239365</td>
+                    <td class="tg-baqh">19.319269</td>
+                    <td class="tg-baqh">0.590237</td>
+                    <td class="tg-baqh">0.299568</td>
+                    <td class="tg-baqh">19.112468</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-baqh">UIZ</td>
+                    <td class="tg-baqh">0.599372</td>
+                    <td class="tg-baqh">0.162323</td>
+                    <td class="tg-baqh">19.070938</td>
+                    <td class="tg-baqh">0.568643</td>
+                    <td class="tg-baqh">0.167898</td>
+                    <td class="tg-baqh">19.788819</td>
+                  </tr>
+                </tbody>
+                </table>
+                <p></p>
+
+<p></p>
+En la gráfica 1 se ilustra una muestra de los valores de Ozono registrados por el sensor de la estacion atmosférica MER vs el valor que se pronostico con el modelo
+entrenado una hora antes de conocer cual sería su valor.
+<p></p>
+</div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', { packages: ['corechart'] });
+      google.charts.setOnLoadCallback(drawChart);
+  
+      function drawChart() {
+        const data = new google.visualization.DataTable();
+        data.addColumn('datetime', 'Fecha'); // Eje X como fechas
+        data.addColumn('number', 'Sensor');   // Primera serie
+        data.addColumn('number', 'Pronóstico'); // Segunda serie
+  
+        data.addRows([
+          [new Date('2024-01-20 00:00:00'), 7, 6],
+          [new Date('2024-01-21 00:00:00'), 8, 7],
+          [new Date('2024-01-22 00:00:00'), 8, 7.5],
+          [new Date('2024-01-23 00:00:00'), 9, 8.5],
+          [new Date('2024-01-24 00:00:00'), 9, 9],
+          [new Date('2024-01-25 00:00:00'), 9, 9.5],
+          [new Date('2024-01-26 00:00:00'), 10, 10],
+          [new Date('2024-01-27 00:00:00'), 11, 11],
+          [new Date('2024-01-28 00:00:00'), 14, 12],
+          [new Date('2024-01-29 00:00:00'), 14, 13],
+          [new Date('2024-01-30 00:00:00'), 15, 14]
+        ]);
+  
+        const options = {
+          title: 'Gráfica 1. Valores del ozono registrados vs los pronosticados',
+          curveType: 'function',
+          legend: { position: 'bottom' },
+          hAxis: { format: 'yyyy-MM-dd HH:mm:ss', title: 'Fecha' }, // Formato de fecha
+          vAxis: { title: 'Valor de Ozono' },
+          colors: ['blue', 'red']
+        };
+  
+        const chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+<body>
+    <div id="chart_div" style="width: 800px; height: 500px;"></div>
+  </body>
+{% endblock %}
+
+

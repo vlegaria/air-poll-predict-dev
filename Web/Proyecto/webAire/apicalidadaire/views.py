@@ -26,11 +26,9 @@ class prediccion(APIView):
         contaminante =  request.POST.get("contaminante")
         prediccion1 = request.POST.get("prediccion1")
         estacion = request.POST.get("estacion")
-
         predictionSel = True
-        if(prediccion1 == "True"):
+        if(prediccion1 == "false"):
             predictionSel = False
-
         try:
             #Prediccion mer
             idPrediccion = prediction(int(estacion), predictionSel, contaminante)

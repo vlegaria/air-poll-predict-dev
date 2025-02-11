@@ -3,13 +3,14 @@ import pandas as pd
 from sqlalchemy import create_engine
 import numpy as np
 from sklearn.metrics import make_scorer, mean_squared_error, r2_score, mean_absolute_error
+from sklearn.preprocessing import MinMaxScaler
 
 def table_data(table_name, target, station):
     # Crear la conexión
     engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
     esquema = 'public'
     # Recuperar los datos y cargar en un DataFrame
-    table_name = 'apicalidadaire_'+station+'_norm'
+    #table_name = 'apicalidadaire_'+station+'_norm'
     query = f"SELECT * FROM {esquema}.{table_name};"
     df = pd.read_sql_query(query, engine)
     print(len(df))
