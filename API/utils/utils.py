@@ -43,7 +43,12 @@ def nearest_street_request(stations2forecast,printData):
                     data_tomtom = response.json()
                     if printData:
                         print(data_tomtom)
-                    traffic_flow = data_tomtom.get('flowSegmentData').get('currentSpeed') / data_tomtom.get('flowSegmentData').get('freeFlowSpeed')
+                    try:
+                        traffic_flow = data_tomtom.get('flowSegmentData').get('currentSpeed') / data_tomtom.get('flowSegmentData').get('freeFlowSpeed')
+                    except:
+                        traffic_flow = 0
+                    traffic_flow = max(0.0, traffic_flow)
+                    traffic_flow = min(traffic_flow, 1.0)
                     traffic_flow = "{:.6f}".format(traffic_flow)
                     TRFC = traffic_flow
                     otro_intento = False
