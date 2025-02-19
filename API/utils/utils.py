@@ -211,13 +211,13 @@ def norm_data_averages(stations2forecast, timenow):
 
             df_escalado = df.copy()
 
-            df_escalado[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = scaler.transform(df[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
+            df_escalado[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "hour", "month"]] = scaler.transform(df[["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "hour", "month"]])
 
             reescalar_Data = False
 
             #Verificar que los datos escalados se encuentren dentro del minimo y maximo establecido 
             for dato in df_escalado.columns:
-                if(dato in ["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]):
+                if(dato in ["CO", "NO", "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "hour", "month"]):
                     if(df_escalado.loc[0, dato] < 0 or df_escalado.loc[0, dato] >  1):
                         reescalar_Data = True
                         print(df_escalado.loc[0, dato])
@@ -238,13 +238,13 @@ def norm_data_averages(stations2forecast, timenow):
                 
                 for index, row in df_norm.iterrows():
                     # Seleccionamos los valores de la fila y los transformamos a un array de 1x12
-                    row_values = row[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]].values.reshape(1, -1)
+                    row_values = row[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "hour", "month"]].values.reshape(1, -1)
                     
                     # Aplicamos inverse_transform y convertimos el resultado en un array plano
                     inverse_values = scaler.inverse_transform(row_values).flatten()
                     
                     # Asignamos los valores transformados a las columnas correspondientes
-                    df_data.loc[index, ["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = inverse_values
+                    df_data.loc[index, ["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "hour", "month"]] = inverse_values
                     #print(nuevaRow)
 
                 #Agregamos valor de ultima consulta hora
@@ -253,12 +253,12 @@ def norm_data_averages(stations2forecast, timenow):
                 nuevoScaler = MinMaxScaler()
 
                 #Obtenemos los nuevos escalers
-                nuevoScaler.fit(df_data[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
+                nuevoScaler.fit(df_data[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "hour", "month"]])
 
                 df_norm_data_escalada = df_data.copy()
 
                 #Obtener los nuevos valores escalados
-                df_norm_data_escalada[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]] = nuevoScaler.transform(df_data[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP"]])
+                df_norm_data_escalada[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "hour", "month"]] = nuevoScaler.transform(df_data[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "hour", "month"]])
 
                 #Limpiar tabla para insertar nuevos valores escalados
                 query = f"DELETE FROM {esquema}.{table_name};"
