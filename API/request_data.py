@@ -39,10 +39,21 @@ while True:
     
     if int(minuto) == 55:
 
-        #Verificamos si la pagina del gobierno esta caida y si es asi consultamos en Api
-        response = requests.get(urlGob)
+        paginaGobDisponible = False
 
-        if response.status_code == 200:
+        try:
+            #Verificamos si la pagina del gobierno esta caida y si es asi consultamos en Api
+            response = requests.get(urlGob)
+
+            if response.status_code == 200:
+                paginaGobDisponible = True
+
+        except:
+            print("Error al consultar pag gob")
+
+
+
+        if paginaGobDisponible:
             try:
                 nearest_street_requestGob(stations2forecast, printData=False)
             except Exception as e:
@@ -59,7 +70,7 @@ while True:
         #except Exception as e:
         #    print("Ocurrio un problema al normalizar los promedios horarios, ", e)
         #subprocess.Popen(['../../Webaire/Scripts/python.exe', 'norm_data.py']) #Se pone la ubicación de python.exe del Env, en caso que no se use entorno virtual se pone solo python
-        subprocess.Popen(['python3', 'norm_data.py']) #Se pone la ubicación de python.exe del Env, en caso que no se use entorno virtual se pone solo python
+        subprocess.Popen(['python', 'norm_data.py']) #Se pone la ubicación de python.exe del Env, en caso que no se use entorno virtual se pone solo python
     
     if(hora == '3' and minuto == '0'):
         if(fecha_actual == fechaConsulta):
