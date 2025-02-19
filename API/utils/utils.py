@@ -125,6 +125,9 @@ def nearest_street_request(stations2forecast,printData):
     return
 
 def get_hourly_averages(stations2forecast, timenow): 
+
+    print("get_hourly_averages")
+
     for station in stations2forecast:
         engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
         esquema = 'public'
@@ -167,6 +170,9 @@ def get_hourly_averages(stations2forecast, timenow):
 
 
 def norm_data_averages(stations2forecast, timenow):
+
+    print("norm_data_averages")
+
     for station in stations2forecast:
 
         print("Normalización de estación: " + str(station))

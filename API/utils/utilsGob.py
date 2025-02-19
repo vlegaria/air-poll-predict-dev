@@ -16,6 +16,8 @@ tz_mexico = pytz.timezone('America/Mexico_City')
 
 def nearest_street_requestGob(stations2forecast,printData):
 
+    print("nearest_street_requestGob")
+    
     datetime_now = datetime.now(tz_mexico)
     year = str(datetime_now.year)
     date_df = datetime_now.strftime('%Y-%m-%d')

@@ -6,6 +6,8 @@ from utils.utils import *
 
 import subprocess
 
+import traceback
+
 
 stations2forecast = ['MER','UIZ']
 
@@ -58,12 +60,14 @@ while True:
                 nearest_street_requestGob(stations2forecast, printData=False)
             except Exception as e:
                 print("No se descargaron datos a las: ", hora,":", minuto,". Ocurrió una excepción:", e)
+                print(traceback.format_exc())
 
         else:
             try:
                 get_hourly_averages(stations2forecast, hora_actual)
             except Exception as e:
                 print("Ocurrió una excepción, no se pudieron calcular los promedios horarios:", e)
+                print(traceback.format_exc())
 
         #try:
         #    norm_data_averages(stations2forecast, hora_actual)
@@ -83,7 +87,10 @@ while True:
             except Exception as e:
                 print("Ocurrió una excepción, no se logro hacer entranamineto semanal", e)
 
-
+    if(hora == '0' and minuto == '0'):
+        #TODO realizar predeccion de 24 horas y guardar el registro en la tabla
+        pass
+     
 
     time.sleep(60)
             
