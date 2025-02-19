@@ -5,6 +5,8 @@ import pytz
 #from utils.utilsGob import *
 from utils.utils import *
 
+import traceback
+
 stations2forecast = ['MER','UIZ']
 
 locale.setlocale(locale.LC_TIME, 'es_MX.UTF-8')
@@ -21,3 +23,4 @@ try:
     norm_data_averages(stations2forecast, hora_actual)
 except Exception as e:
     print("Ocurrio un problema al normalizar los promedios horarios, ", e)
+    print(traceback.format_exc())
