@@ -4,7 +4,20 @@
 {%block background%}{%load static%}{%static 'core/img/portfolio-bg.jpg'%}{%endblock%}
 
 {% block content %}
-
+<style>
+table {
+  width: 50%;
+  border-collapse: collapse; /* Asegura que las líneas no se dupliquen */
+}
+th, td {
+  border: 1px solid black; /* Borde de 1px en negro */
+  padding: 8px;
+  text-align: center;
+}
+th {
+  background-color: #f2f2f2; /* Fondo para encabezados */
+}
+</style>
 <div class="col-lg-10 col-md-10 mx-auto"  style="text-align: justify; color: black;">
     <h1> Métricas de los modelos  </h1>
     <p> Las estimaciones de los contaminantes atmosféricos se realizan con un modelo XGBoost en su version de regresor.
@@ -12,7 +25,7 @@
         <p></p>
         <p>En la tabla 1 se muestra las métricas del modelo actual para el pronóstico de la siguiente hora:</p>
         <p> </p>
-            <table class="tg" style="table-layout: fixed; width: 372px; margin:auto"><colgroup>
+            <table class="tg" style="table-layout: fixed; width: 700px; margin:auto"><colgroup>
                 <caption class="table-title"> Tabla 1.</caption>
             <col style="width: 78px">
             <col style="width: 78px">
@@ -31,30 +44,30 @@
             <tbody>
               <tr>
                 <td class="tg-baqh">Métricas</td>
-                <td class="tg-baqh">R2</td>
-                <td class="tg-baqh">R2-adj</td>
+                <td class="tg-baqh">R<sup>2</sup></td>
+                <td class="tg-baqh">R<sup>2</sup>-adj</td>
                 <td class="tg-baqh">RMSE<p>(ppb)</p></td>
-                <td class="tg-baqh">R2</td>
-                <td class="tg-baqh">R2-adj</td>
+                <td class="tg-baqh">R<sup>2</sup></td>
+                <td class="tg-baqh">R<sup>2</sup>-adj</td>
                 <td class="tg-baqh">RMSE<p>(ppb)</p></td>
               </tr>
               <tr>
                 <td class="tg-baqh">MER</td>
-                <td class="tg-baqh">0.821712</td>
-                <td class="tg-baqh">0.677976</td>
-                <td class="tg-baqh">12.247256</td>
-                <td class="tg-baqh">0.817348</td>
-                <td class="tg-baqh">0.689358</td>
-                <td class="tg-baqh">12.396251</td>
+                <td class="tg-baqh">0.8217</td>
+                <td class="tg-baqh">0.6779</td>
+                <td class="tg-baqh">12.247</td>
+                <td class="tg-baqh">0.8173</td>
+                <td class="tg-baqh">0.6893</td>
+                <td class="tg-baqh">12.3962</td>
               </tr>
               <tr>
                 <td class="tg-baqh">UIZ</td>
-                <td class="tg-baqh">0.801033</td>
-                <td class="tg-baqh">0.586971</td>
-                <td class="tg-baqh">13.184089</td>
-                <td class="tg-baqh">0.793360</td>
-                <td class="tg-baqh">0.603830</td>
-                <td class="tg-baqh">13.435895</td>
+                <td class="tg-baqh">0.8010</td>
+                <td class="tg-baqh">0.5869</td>
+                <td class="tg-baqh">13.1840</td>
+                <td class="tg-baqh">0.7933</td>
+                <td class="tg-baqh">0.6038</td>
+                <td class="tg-baqh">13.4358</td>
               </tr>
             </tbody>
             </table>
@@ -64,7 +77,7 @@
             <p>En la tabla 2 se muestra las métricas del modelo actual para el pronóstico del día siguiente:</p>
             <p> </p>
             <p> </p>
-                <table class="tg" style="table-layout: fixed; width: 372px; margin:auto"><colgroup>
+                <table class="tg" style="table-layout: fixed; width: 700px; margin:auto"><colgroup>
                     <caption class="table-title"> Tabla 2.</caption>
                 <col style="width: 78px">
                 <col style="width: 78px">
@@ -83,37 +96,37 @@
                 <tbody>
                   <tr>
                     <td class="tg-baqh">Métricas</td>
-                    <td class="tg-baqh">R2</td>
-                    <td class="tg-baqh">R2-adj</td>
+                    <td class="tg-baqh">R<sup>2</sup></td>
+                    <td class="tg-baqh">R<sup>2</sup>-adj</td>
                     <td class="tg-baqh">RMSE<p>(ppb)</p></td>
-                    <td class="tg-baqh">R2</td>
-                    <td class="tg-baqh">R2-adj</td>
+                    <td class="tg-baqh">R<sup>2</sup></td>
+                    <td class="tg-baqh">R<sup>2</sup>-adj</td>
                     <td class="tg-baqh">RMSE<p>(ppb)</p></td>
                   </tr>
                   <tr>
                     <td class="tg-baqh">MER</td>
-                    <td class="tg-baqh">0.581322</td>
-                    <td class="tg-baqh">0.239365</td>
-                    <td class="tg-baqh">19.319269</td>
-                    <td class="tg-baqh">0.590237</td>
-                    <td class="tg-baqh">0.299568</td>
-                    <td class="tg-baqh">19.112468</td>
+                    <td class="tg-baqh">0.5813</td>
+                    <td class="tg-baqh">0.2393</td>
+                    <td class="tg-baqh">19.3192</td>
+                    <td class="tg-baqh">0.5902</td>
+                    <td class="tg-baqh">0.2995</td>
+                    <td class="tg-baqh">19.1124</td>
                   </tr>
                   <tr>
                     <td class="tg-baqh">UIZ</td>
-                    <td class="tg-baqh">0.599372</td>
-                    <td class="tg-baqh">0.162323</td>
-                    <td class="tg-baqh">19.070938</td>
-                    <td class="tg-baqh">0.568643</td>
-                    <td class="tg-baqh">0.167898</td>
-                    <td class="tg-baqh">19.788819</td>
+                    <td class="tg-baqh">0.5993</td>
+                    <td class="tg-baqh">0.1623</td>
+                    <td class="tg-baqh">19.0709</td>
+                    <td class="tg-baqh">0.5686</td>
+                    <td class="tg-baqh">0.1678</td>
+                    <td class="tg-baqh">19.7888</td>
                   </tr>
                 </tbody>
                 </table>
                 <p></p>
 
 <p></p>
-En la gráfica 1 se ilustra una muestra de los valores de Ozono registrados por el sensor de la estacion atmosférica MER vs el valor que se pronostico con el modelo
+En la gráfica 1 se ilustra una muestra de los valores de ozono registrados por el sensor de la estacion atmosférica MER vs el valor que se pronostico con el modelo
 entrenado una hora antes de conocer cual sería su valor.
 <p></p>
 </div>
