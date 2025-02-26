@@ -37,7 +37,7 @@ def InsertarDatosMer():
         
         #Query de insert
         query = f'INSERT INTO public."apicalidadaire_mer_norm" ("date", "CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", year, month, day, hour, minutes, traffic) VALUES (\'{mer.loc[ind, "date"][0:10]}\',{mer.loc[ind, "CO"]},{mer.loc[ind, "NO"]},{mer.loc[ind, "NOX"]},{mer.loc[ind, "NO2"]},{mer.loc[ind, "O3"]},{mer.loc[ind, "PM10"]},{mer.loc[ind, "PM25"]},{mer.loc[ind, "RH"]},{mer.loc[ind, "SO2"]},{mer.loc[ind, "TMP"]},{mer.loc[ind, "WDR"]},{mer.loc[ind, "WSP"]},{mer.loc[ind, "year"]},{mer.loc[ind, "month"]},{mer.loc[ind, "day"]},{mer.loc[ind, "hour"]},{mer.loc[ind, "minute"]},{mer.loc[ind, "traffic"]});'
-        
+        print(query)
         query = query.replace("nan","\'nan\'")
         #ejecutamos insert
         with engine.connect() as conn:
