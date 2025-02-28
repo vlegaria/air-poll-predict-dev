@@ -415,3 +415,111 @@ def consult_tables():
 
     return
  
+
+def execute_prediction_O3_1hr(stations2forecast):
+
+    time_future = 1
+
+    idTarget = 1
+
+    for station in stations2forecast:
+
+        idStation = selectIdStation(station)
+
+        model_name = "O3-"+str(station.lower())+"_"+str(time_future)+"hr_forecast_model"
+        print(f'model_name: {model_name}')
+        best_model_alias = "champion"
+        best_model = mlflow.pyfunc.load_model(f"models:/{model_name}@{best_model_alias}")
+        best_model_info = client.get_model_version_by_alias(model_name, best_model_alias)
+        best_model_version = best_model_info.version
+        best_model_run_id = best_model_info.run_id
+        print("Carga el modelo correctamente")
+        station = station.upper()
+        target = selectTarget(idTarget).loc[0, 'Contaminante']
+        time_steps = 24
+        table_name = 'apicalidadaire_'+station+'_norm'
+        X, y, df, dates = table_data(table_name, target, station)
+        data = ingest(df, target, time_steps)
+        norm_predictions = best_model.predict(data)
+        print("Aplica predicción")
+        artifacts = client.list_artifacts(best_model_run_id, path="artifacts")
+        #scaler_dir = 'artifacts/'+station.upper()+'_scaler_'+target+'.pkl'
+        scaler_dir = 'artifacts/'+station.upper()+'_scaler.pkl'
+        local_path = mlflow.artifacts.download_artifacts(run_id=best_model_run_id, artifact_path=scaler_dir)
+        # Abrir el archivo .pkl descargado
+        with open(local_path, "rb") as f:
+            scaler = pickle.load(f)
+        #norm_predictions = norm_predictions.reshape(-1, 1)
+        #predictions = scaler.inverse_transform(norm_predictions)    
+        min_val = scaler.data_min_[4]  # Valor mínimo del O3
+        max_val = scaler.data_max_[4]  # Valor máximo del O3
+        # Aplicar la transformación inversa 
+        predictions = norm_predictions * (max_val - min_val) + min_val
+        ozone_value = round(float(predictions),4)
+
+        estatus = 0
+        if ozone_value <= 51:
+            estatus = 1
+        elif ozone_value > 51 and ozone_value <= 95:
+            estatus = 2
+        elif ozone_value > 95 and ozone_value <= 135:
+            estatus = 3
+        elif ozone_value > 135 and ozone_value <= 175:
+            estatus = 4
+        else:
+            estatus = 5
+
+        idPrediccion = registerPrediction(idStation,idTarget,ozone_value,1,estatus).loc[0, 'idPrediccion']
+
+def registerPrediction(idStation,idContaminante,valorContaminante,idUnidad,idEstatus):
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    table_name = 'apicalidadaire_prediccion'
+    query = f'INSERT INTO public.apicalidadaire_prediccion("Estacion_id", "Contaminante_id", "valorContaminante", "Unidad_id", "Estatus_id", "fechaPrediccion") VALUES ({idStation}, {idContaminante}, {valorContaminante}, {idUnidad}, {idEstatus}, CURRENT_TIMESTAMP );'
+
+    with engine.connect() as conn:
+       conn.execute(text(query))
+       conn.commit()
+
+    query = f"SELECT \"idPrediccion\" FROM {esquema}.{table_name} where \"Estacion_id\" = {idStation} and \"Contaminante_id\" = {idContaminante} and \"valorContaminante\" = {valorContaminante} and \"Unidad_id\" = {idUnidad} and \"Estatus_id\" = {idEstatus} ORDER BY \"fechaPrediccion\" DESC LIMIT 1;"
+    return pd.read_sql_query(query, engine)
+
+
+def selectTarget(target):
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    # Recuperar los datos y cargar en un DataFrame
+    table_name = 'apicalidadaire_contaminantes'
+    query = f"SELECT \"Contaminante\" FROM {esquema}.{table_name} where \"idContaminante\" = {target};"
+    return pd.read_sql_query(query, engine)
+
+
+def table_data(table_name, target, station):
+    # Crear la conexión
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    # Recuperar los datos y cargar en un DataFrame
+    table_name = 'apicalidadaire_'+station+'_norm'
+    query = f"SELECT * FROM {esquema}.{table_name};"
+    df = pd.read_sql_query(query, engine)
+    dates = df.date
+    y = df[target]
+    X = df.drop(columns=['idData', 'date', 'year', 'day','minutes', 'SO2', 'contingency'])
+    X = X.drop(columns=[target])
+    return X, y, df, dates
+
+def ingest(df, target, time_steps):
+    df = df.tail(time_steps)
+    X = df.drop(columns=['idData', 'date', 'year', 'day', 'minutes', 'SO2', 'contingency'])
+    X = X.drop(columns=[target])
+    array = X.to_numpy()
+    vector = array.flatten()
+    return np.array([vector])
+
+def selectIdStation(station):
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    # Recuperar los datos y cargar en un DataFrame
+    table_name = 'apicalidadaire_estacionescame'
+    query = f"SELECT \"idEstacion\" FROM {esquema}.{table_name} where key = '{station}';"
+    return pd.read_sql_query(query, engine)

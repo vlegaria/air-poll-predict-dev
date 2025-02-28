@@ -69,6 +69,13 @@ while True:
                 print("Ocurrió una excepción, no se pudieron calcular los promedios horarios:", e)
                 print(traceback.format_exc())
 
+        try:
+            execute_prediction_O3_1hr(stations2forecast)
+        except Exception as e:
+                print("Ocurrió una excepción, no se pudo realizar la prediccion", e)
+                print(traceback.format_exc())
+
+
         #try:
         #    norm_data_averages(stations2forecast, hora_actual)
         #except Exception as e:
