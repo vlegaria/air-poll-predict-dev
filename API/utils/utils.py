@@ -424,7 +424,7 @@ def execute_prediction_O3_1hr(stations2forecast):
 
     for station in stations2forecast:
 
-        idStation = selectIdStation(station)
+        idStation = selectIdStation(station).loc[0,'idEstacion']
 
         model_name = "O3-"+str(station.lower())+"_"+str(time_future)+"hr_forecast_model"
         print(f'model_name: {model_name}')
@@ -522,4 +522,5 @@ def selectIdStation(station):
     # Recuperar los datos y cargar en un DataFrame
     table_name = 'apicalidadaire_estacionescame'
     query = f"SELECT \"idEstacion\" FROM {esquema}.{table_name} where key = '{station}';"
+    print(query)
     return pd.read_sql_query(query, engine)
