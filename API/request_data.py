@@ -42,6 +42,7 @@ while True:
     if int(minuto) == 55:
 
         paginaGobDisponible = False
+        consultaGobCorrecta = False
 
         try:
             #Verificamos si la pagina del gobierno esta caida y si es asi consultamos en Api
@@ -58,16 +59,19 @@ while True:
         if paginaGobDisponible:
             try:
                 nearest_street_requestGob(stations2forecast, printData=False)
+                consultaGobCorrecta = True
             except Exception as e:
                 print("No se descargaron datos a las: ", hora,":", minuto,". Ocurrió una excepción:", e)
                 print(traceback.format_exc())
 
-        else:
+        if(not paginaGobDisponible or not consultaGobCorrecta):
             try:
                 get_hourly_averages(stations2forecast, hora_actual)
             except Exception as e:
                 print("Ocurrió una excepción, no se pudieron calcular los promedios horarios:", e)
                 print(traceback.format_exc())
+
+        #Si no se realiza consulta ejecuto promedio de apis
 
         try:
             execute_prediction_O3_1hr(stations2forecast)
