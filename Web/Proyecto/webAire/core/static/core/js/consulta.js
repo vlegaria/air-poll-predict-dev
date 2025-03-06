@@ -42,7 +42,7 @@ $(document).ready(function(){
             //Peticion para estación "mer"
             estacion = 27;
             $.ajax ({
-                url:'api/prediccion/',
+                url:'/api/prediccion/',
                 type: 'POST',
                 data: {estacion,contaminante,prediccion1},
                 dataType: 'json',
@@ -59,7 +59,7 @@ $(document).ready(function(){
             //Peticion para estación "uiz"
             estacion = 41;
             $.ajax ({
-                url:'api/prediccion/',
+                url:'/api/prediccion/',
                 type: 'POST',
                 data: {estacion,contaminante,prediccion1},
                 dataType: 'json',
@@ -92,29 +92,65 @@ $(document).ready(function(){
         }
         
     });
+
 });
 
 
 
-function drawChart() {
+async function drawChart() {
     const data = new google.visualization.DataTable();
     data.addColumn('datetime', 'Fecha'); // Eje X como fechas
     data.addColumn('number', 'Sensor');   // Primera serie
     data.addColumn('number', 'Pronóstico'); // Segunda serie
   
-    data.addRows([
-        [new Date('2024-01-20 00:00:00'), 7, 6],
-        [new Date('2024-01-21 00:00:00'), 8, 7],
-        [new Date('2024-01-22 00:00:00'), 8, 7.5],
-        [new Date('2024-01-23 00:00:00'), 9, 8.5],
-        [new Date('2024-01-24 00:00:00'), 9, 9],
-        [new Date('2024-01-25 00:00:00'), 9, 9.5],
-        [new Date('2024-01-26 00:00:00'), 10, 10],
-        [new Date('2024-01-27 00:00:00'), 11, 11],
-        [new Date('2024-01-28 00:00:00'), 14, 12],
-        [new Date('2024-01-29 00:00:00'), 14, 13],
-        [new Date('2024-01-30 00:00:00'), 15, 14]
-    ]);
+    //estacion = 27;
+
+    var promise = new Promise((resolve, reject) => {
+        $.ajax ({
+            url:'/api/ultimaspredic/',
+            type: 'POST',
+            data: {},
+            dataType: 'json',
+            success: function(response){
+                resolve(response);
+            }
+        });
+    });
+
+    var datos = await promise;
+
+    datosGrafica = []
+
+    if(datos.length != 0){
+       /*  datos.forEach(element => {
+            datosGrafica.append([new Date(datos[0]), datos[1], datos[2]])
+        }); */
+
+        for (let i = 0; i < datos.length; i++ ){
+            datosGrafica.push([new Date(datos[i][0]),datos[i][1],datos[i][2]])
+        }
+
+        console.log(datosGrafica)
+        
+        data.addRows(datosGrafica);
+
+    } else {
+        data.addRows([
+            [new Date('2024-01-20 00:00:00'), 7, 6],
+            [new Date('2024-01-21 00:00:00'), 8, 7],
+            [new Date('2024-01-22 00:00:00'), 8, 7.5],
+            [new Date('2024-01-23 00:00:00'), 9, 8.5],
+            [new Date('2024-01-24 00:00:00'), 9, 9],
+            [new Date('2024-01-25 00:00:00'), 9, 9.5],
+            [new Date('2024-01-26 00:00:00'), 10, 10],
+            [new Date('2024-01-27 00:00:00'), 11, 11],
+            [new Date('2024-01-28 00:00:00'), 14, 12],
+            [new Date('2024-01-29 00:00:00'), 14, 13],
+            [new Date('2024-01-30 00:00:00'), 15, 14]
+        ]);
+    }
+
+    
   
     const options = {
         title: 'Gráfica 1. Valores del ozono registrados vs los pronosticados',

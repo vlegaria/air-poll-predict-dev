@@ -10,6 +10,7 @@ import traceback
 import os
 
 from apicalidadaire.prediccion.prediction import prediction
+from apicalidadaire.prediccion.prediction import obtenerUltimasPredic
 
 # Create your views here.
 
@@ -43,6 +44,29 @@ class prediccion(APIView):
             print(traceback.format_exc())
 
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
 
+class ultimaspredicciones(APIView):
+
+    def post(self, request, format=None):
+
+        print("Ultimas predic de Uiz")
+
+        station = 41
+
+        #Obtener ultimas 10 predicciones disponibles
+
+        try:
+
+            predicciones = obtenerUltimasPredic(station)
+
+            return Response(predicciones,status=status.HTTP_200_OK)
+    
+        except Exception:
+            print(traceback.format_exc())
+
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        
 
         

@@ -106,3 +106,23 @@ def registerPrediction(idStation,idContaminante,valorContaminante,idUnidad,idEst
 
     query = f"SELECT \"idPrediccion\" FROM {esquema}.{table_name} where \"Estacion_id\" = {idStation} and \"Contaminante_id\" = {idContaminante} and \"valorContaminante\" = {valorContaminante} and \"Unidad_id\" = {idUnidad} and \"Estatus_id\" = {idEstatus} ORDER BY \"fechaPrediccion\" DESC LIMIT 1;"
     return pd.read_sql_query(query, engine)
+
+
+def selectUltimasPredic(idstation):
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    # Recuperar los datos y cargar en un DataFrame
+    table_name = 'apicalidadaire_prediccion'
+    query = f"SELECT * FROM {esquema}.{table_name} where \"Estacion_id\" = {idstation} order by \"idPrediccion\" desc limit 20;"
+    print(query)
+    return pd.read_sql_query(query, engine)
+
+
+def selectUltimosDatos(station):
+    engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
+    esquema = 'public'
+    # Recuperar los datos y cargar en un DataFrame
+    table_name = f'apicalidadaire_{station}_prom_hr'
+    query = f"SELECT * FROM {esquema}.{table_name} order by \"idData\" desc limit 20;"
+    print(query)
+    return pd.read_sql_query(query, engine)

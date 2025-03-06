@@ -92,3 +92,34 @@ def prediction(idStation, time1hr, idTarget):
     return idPrediccion
 
 #prediction("mer", True, "ozono")
+
+
+def obtenerUltimasPredic(idStation):
+
+    station = selectStation(idStation).loc[0, 'key']
+
+    #Obtener las ultimas 20 predicciones
+
+    ultimasPred = selectUltimasPredic(idStation)
+
+    print(ultimasPred)
+
+    #Otener los ultimos 20 datos
+
+    ultimosRegistros = selectUltimosDatos(station.lower())
+
+    print(ultimosRegistros)
+
+    dicPredVal = []
+
+    indexPred = 0
+
+    for pred in range(ultimasPred.shape[0] ):
+        
+        if(not ultimosRegistros.loc[pred,"O3"] is np.nan and indexPred < 10):
+            
+            dicPredVal.append([ultimasPred.loc[pred,"fechaPrediccion"], ultimasPred.loc[pred,"valorContaminante"], ultimosRegistros.loc[pred,"O3"]])
+
+            indexPred = indexPred + 1
+
+    return dicPredVal

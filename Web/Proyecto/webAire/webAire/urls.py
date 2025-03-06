@@ -24,6 +24,6 @@ urlpatterns = [
     path('metricas/', views.metricas, name="metricas"),
     path('contacto/', views.contacto, name="contacto"),
     path('admin/', admin.site.urls),
-    path("pronostico/api/", include("apicalidadaire.urls"))
+    path("api/", include("apicalidadaire.urls"))
     #path('prediccion/', vapi.prediccion, name="prediccion")
 ]
