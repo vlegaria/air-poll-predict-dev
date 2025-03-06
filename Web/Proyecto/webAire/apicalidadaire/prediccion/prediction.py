@@ -118,7 +118,7 @@ def obtenerUltimasPredic(idStation):
         
         if(not ultimosRegistros.loc[pred,"O3"] is np.nan and indexPred < 10):
             
-            dicPredVal.append([ultimasPred.loc[pred,"fechaPrediccion"], ultimasPred.loc[pred,"valorContaminante"], ultimosRegistros.loc[pred,"O3"]])
+            dicPredVal.append([ultimasPred.loc[pred,"fechaPrediccion"], ultimosRegistros.loc[pred,"O3"],ultimasPred.loc[pred,"valorContaminante"]])
 
             indexPred = indexPred + 1
 
