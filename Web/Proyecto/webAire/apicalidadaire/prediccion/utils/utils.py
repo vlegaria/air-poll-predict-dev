@@ -20,6 +20,7 @@ def table_data(table_name, target, station):
     return X, y, df, dates
 
 def ingest(df, target, time_steps):
+    df = df.dropna()
     df = df.tail(time_steps)
     X = df.drop(columns=['idData', 'date', 'year', 'day', 'minutes', 'SO2', 'contingency'])
     X = X.drop(columns=[target])
