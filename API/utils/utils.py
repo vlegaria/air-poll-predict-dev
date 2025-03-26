@@ -295,11 +295,11 @@ def norm_data_averages(stations2forecast, timenow):
                 df_norm_data_escalada.to_sql(table_name, engine, if_exists='append', method='multi', index=False)
 
                 #Exportar pkl con nuevo escaler
-                pickle.dump(nuevoScaler, open(f'../../ML/Scalers/{station}_scaler.pkl', "wb"))
+                pickle.dump(nuevoScaler, open(f'ML/Scalers/{station}_scaler.pkl', "wb"))
 
                 #Subir a modelo 24hr
                 with mlflow.start_run(run_id=best_model_run_id) as run:
-                    mlflow.log_artifact(f'../../ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
+                    mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
 
                 #Subir a modelo 1hr
                 model_name = "O3-"+str(station.lower())+"_1hr_forecast_model"
@@ -309,7 +309,7 @@ def norm_data_averages(stations2forecast, timenow):
                 best_model_run_id = best_model_info.run_id
 
                 with mlflow.start_run(run_id=best_model_run_id) as run:
-                    mlflow.log_artifact(f'../../ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
+                    mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
 
                 #Rentrenar modelos, subirlos a mlflow
                 timesfuture = [1,24]
@@ -347,7 +347,7 @@ def upload_scalers_mlflow(stations2forecast):
         best_model_run_id = best_model_info.run_id
 
         with mlflow.start_run(run_id=best_model_run_id) as run:
-            mlflow.log_artifact(f'../../ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
+            mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
 
 
         #Subir a modelo 1hr
@@ -358,7 +358,7 @@ def upload_scalers_mlflow(stations2forecast):
         best_model_run_id = best_model_info.run_id
 
         with mlflow.start_run(run_id=best_model_run_id) as run:
-            mlflow.log_artifact(f'../../ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
+            mlflow.log_artifact(f'ML/Scalers/{station}_scaler.pkl', artifact_path="artifacts")
         
 def train_models(stations2forecast, timesfuture, normalizado):
 

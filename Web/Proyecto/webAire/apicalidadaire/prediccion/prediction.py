@@ -115,8 +115,12 @@ def obtenerUltimasPredic(idStation):
     indexPred = 0
 
     for pred in range(ultimasPred.shape[0] ):
+
+        print(f'ultimosRegistros.loc[pred,"O3"] is np.nan {ultimosRegistros.loc[pred,"O3"] is np.nan}')
         
         if(not ultimosRegistros.loc[pred,"O3"] is np.nan and indexPred < 10):
+            
+            print("Agregamos prediccion: " + str(pred))
             
             dicPredVal.append([ultimasPred.loc[pred,"fechaPrediccion"], ultimosRegistros.loc[pred,"O3"],ultimasPred.loc[pred,"valorContaminante"]])
 
