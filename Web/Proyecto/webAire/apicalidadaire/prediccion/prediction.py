@@ -116,7 +116,7 @@ def obtenerUltimasPredic(idStation):
 
     for pred in range(ultimasPred.shape[0] ):
 
-        print(f'ultimosRegistros.loc[pred,"O3"] is np.nan {ultimosRegistros.loc[pred,"O3"]}, {type(ultimosRegistros.loc[pred,"O3"])}')
+        print(f'ultimosRegistros.loc[pred,"O3"] is np.nan {ultimosRegistros.loc[pred,"O3"]}, {type(ultimosRegistros.loc[pred,"O3"])}, {ultimosRegistros.loc[pred,"O3"] == np.nan}, {str(ultimosRegistros.loc[pred,"O3"]) == "nan"}')
         
         if(not ultimosRegistros.loc[pred,"O3"] is np.nan and indexPred < 10):
             
