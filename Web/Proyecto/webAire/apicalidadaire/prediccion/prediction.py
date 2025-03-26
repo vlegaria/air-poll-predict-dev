@@ -118,7 +118,7 @@ def obtenerUltimasPredic(idStation):
 
         print(f'ultimosRegistros.loc[pred,"O3"] is np.nan {ultimosRegistros.loc[pred,"O3"]}, {type(ultimosRegistros.loc[pred,"O3"])}, {ultimosRegistros.loc[pred,"O3"] == np.nan}, {str(ultimosRegistros.loc[pred,"O3"]) == "nan"}')
         
-        if(not ultimosRegistros.loc[pred,"O3"] is np.nan and indexPred < 10):
+        if(not str(ultimosRegistros.loc[pred,"O3"]) == "nan" and indexPred < 10):
             
             print("Agregamos prediccion: " + str(pred))
             
