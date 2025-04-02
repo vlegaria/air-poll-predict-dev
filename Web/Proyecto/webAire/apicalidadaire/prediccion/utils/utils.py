@@ -4,6 +4,9 @@ from sqlalchemy import create_engine
 from sqlalchemy import text
 import numpy as np
 from sklearn.metrics import make_scorer, mean_squared_error, r2_score, mean_absolute_error
+from datetime import datetime, timedelta
+
+
 def norm_df(df, scaler):
   #Si son negativos o vacios cambiarlos a nan
   for ind in range(df.shape[0]):
@@ -140,9 +143,41 @@ def selectUltimasPredic(idstation):
     esquema = 'public'
     # Recuperar los datos y cargar en un DataFrame
     table_name = 'apicalidadaire_prediccion'
-    query = f"SELECT * FROM {esquema}.{table_name} where \"Estacion_id\" = {idstation} order by \"idPrediccion\" desc limit 20;"
+    query = f"SELECT * FROM {esquema}.{table_name} where \"Estacion_id\" = {idstation} order by \"idPrediccion\" desc limit 100;"
     print(query)
-    return pd.read_sql_query(query, engine)
+    predicciones = pd.read_sql_query(query, engine)
+
+    predicciones.dropna()
+
+    fechaObtener = datetime.now()
+
+    prediccionesPorHora = pd.DataFrame(columns=predicciones.columns)
+
+    horaAgregada = False
+
+    for indPred in range(predicciones.shape[0]):
+
+        fechaPred = predicciones.loc[indPred,"fechaPrediccion"].to_pydatetime()
+
+        if(not( fechaObtener.hour == fechaPred.hour and fechaObtener.day == fechaPred.day and fechaObtener.month == fechaPred.month and fechaObtener.year == fechaPred.year)):
+            horaAgregada = False
+
+        while (not (fechaObtener.hour == fechaPred.hour and fechaObtener.day == fechaPred.day and fechaObtener.month == fechaPred.month and fechaObtener.year == fechaPred.year)):
+
+            fechaObtener = fechaObtener  - timedelta(hours=1)
+
+        if(fechaObtener.hour == fechaPred.hour and fechaObtener.day == fechaPred.day and fechaObtener.month == fechaPred.month and fechaObtener.year == fechaPred.year):
+
+            if( not horaAgregada ):
+
+                prediccionesPorHora = pd.concat([prediccionesPorHora, predicciones.iloc[[indPred]]], ignore_index=True)
+
+                horaAgregada = True
+
+        if(prediccionesPorHora.shape[0] == 30):
+            break
+
+    return prediccionesPorHora
 
 
 def selectUltimosDatos(station):
