@@ -41,7 +41,7 @@ def prediction(idStation, time1hr, idTarget):
         station = station.upper()
         target = selectTarget(idTarget).loc[0, 'Contaminante']
         time_steps = 24
-        table_name = 'apicalidadaire_'+station+'_norm'
+        table_name = 'apicalidadaire_'+station+'_prom_hr'
         X, y, df, dates = table_data(table_name, target, station)
         data = ingest(df, target, time_steps)
         norm_predictions = best_model.predict(data)
@@ -60,7 +60,8 @@ def prediction(idStation, time1hr, idTarget):
         # Aplicar la transformación inversa 
         predictions = norm_predictions * (max_val - min_val) + min_val
         ozone_value = round(float(predictions),4)
-
+        if ozone_value<0:
+            ozone_value = 0
         estatus = 0
         if ozone_value <= 51:
             estatus = 1

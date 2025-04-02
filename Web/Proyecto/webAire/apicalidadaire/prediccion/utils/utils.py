@@ -4,15 +4,41 @@ from sqlalchemy import create_engine
 from sqlalchemy import text
 import numpy as np
 from sklearn.metrics import make_scorer, mean_squared_error, r2_score, mean_absolute_error
+def norm_df(df, scaler):
+  #Si son negativos o vacios cambiarlos a nan
+  for ind in range(df.shape[0]):
+      for dato in df.columns:
+          if(dato in ["CO", "NO",  "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "traffic"]):
+              if(df.loc[ind, dato] < 0):
+                  df.loc[ind, dato] = np.nan
 
-def table_data(table_name, target, station):
+              if(df.loc[ind, dato] == ""):
+                  df.loc[ind, dato] = np.nan
+
+  month_idx= {12:4, 11:2, 10:1, 9:7, 8:6, 7:5, 6:9, 5:11, 4:10, 3:8, 2:12, 1:3}
+  df["month_idx"] = df["month"].map(month_idx)
+
+  hour_idx= {7:0, 6:1, 8:2, 5:3, 4:4, 9:5, 3:6, 2:7, 1:8, 0:9, 23:10, 22:11, 10:12, 21:13, 20:14, 19:15, 11:16, 18:17, 12:18, 17:19, 16:20, 13:21, 15:22, 14:23 }
+  df["hour_idx"] = df["hour"].map(hour_idx)
+  df = df.drop(columns=['month', 'hour'])
+  df = df.rename(columns={'hour_idx': 'hour', 'month_idx':'month' })
+  df_norm_data_escalada = df.copy()
+  #Obtener los nuevos valores escalados
+  df_norm_data_escalada[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "month", "hour"]] = scaler.transform(df[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP","month", "hour"]])
+  df_norm_data_escalada[['CO', 'NO', 'NOX', 'NO2', 'O3', 'PM10', 'PM25', 'RH', 'SO2','TMP', 'WDR', 'WSP', "month", "hour"]] = df_norm_data_escalada[['CO', 'NO', 'NOX', 'NO2', 'O3', 'PM10', 'PM25', 'RH', 'SO2','TMP', 'WDR', 'WSP', "month", "hour"]].round(12)
+  return df_norm_data_escalada
+
+def table_data(table_name, target, station, scaler):
     # Crear la conexión
     engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
     esquema = 'public'
     # Recuperar los datos y cargar en un DataFrame
-    table_name = 'apicalidadaire_'+station+'_norm'
+    #table_name = 'apicalidadaire_'+station+'_norm'
     query = f"SELECT * FROM {esquema}.{table_name};"
     df = pd.read_sql_query(query, engine)
+    df = df.dropna()
+    df.reset_index(drop=True, inplace=True)
+    df = norm_df(df, scaler)
     dates = df.date
     y = df[target]
     X = df.drop(columns=['idData', 'date', 'year', 'day','minutes', 'SO2', 'contingency'])
