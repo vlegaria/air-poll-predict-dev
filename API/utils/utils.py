@@ -415,6 +415,29 @@ def consult_tables():
 
     return
  
+def norm_df(df, scaler):
+  #Si son negativos o vacios cambiarlos a nan
+  for ind in range(df.shape[0]):
+      for dato in df.columns:
+          if(dato in ["CO", "NO",  "NOX","NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "traffic"]):
+              if(df.loc[ind, dato] < 0):
+                  df.loc[ind, dato] = np.nan
+
+              if(df.loc[ind, dato] == ""):
+                  df.loc[ind, dato] = np.nan
+
+  month_idx= {12:4, 11:2, 10:1, 9:7, 8:6, 7:5, 6:9, 5:11, 4:10, 3:8, 2:12, 1:3}
+  df["month_idx"] = df["month"].map(month_idx)
+
+  hour_idx= {7:0, 6:1, 8:2, 5:3, 4:4, 9:5, 3:6, 2:7, 1:8, 0:9, 23:10, 22:11, 10:12, 21:13, 20:14, 19:15, 11:16, 18:17, 12:18, 17:19, 16:20, 13:21, 15:22, 14:23 }
+  df["hour_idx"] = df["hour"].map(hour_idx)
+  df = df.drop(columns=['month', 'hour'])
+  df = df.rename(columns={'hour_idx': 'hour', 'month_idx':'month' })
+  df_norm_data_escalada = df.copy()
+  #Obtener los nuevos valores escalados
+  df_norm_data_escalada[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "month", "hour"]] = scaler.transform(df[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP","month", "hour"]])
+  df_norm_data_escalada[['CO', 'NO', 'NOX', 'NO2', 'O3', 'PM10', 'PM25', 'RH', 'SO2','TMP', 'WDR', 'WSP', "month", "hour"]] = df_norm_data_escalada[['CO', 'NO', 'NOX', 'NO2', 'O3', 'PM10', 'PM25', 'RH', 'SO2','TMP', 'WDR', 'WSP', "month", "hour"]].round(12)
+  return df_norm_data_escalada
 
 def execute_prediction_O3_1hr(stations2forecast):
 
@@ -437,11 +460,7 @@ def execute_prediction_O3_1hr(stations2forecast):
         station = station.upper()
         target = selectTarget(idTarget).loc[0, 'Contaminante']
         time_steps = 24
-        table_name = 'apicalidadaire_'+station+'_norm'
-        X, y, df, dates = table_data(table_name, target, station)
-        data = ingest(df, target, time_steps)
-        norm_predictions = best_model.predict(data)
-        print("Aplica predicción")
+        table_name = 'apicalidadaire_'+station+'_prom_hr'
         artifacts = client.list_artifacts(best_model_run_id, path="artifacts")
         #scaler_dir = 'artifacts/'+station.upper()+'_scaler_'+target+'.pkl'
         scaler_dir = 'artifacts/'+station.upper()+'_scaler.pkl'
@@ -449,6 +468,13 @@ def execute_prediction_O3_1hr(stations2forecast):
         # Abrir el archivo .pkl descargado
         with open(local_path, "rb") as f:
             scaler = pickle.load(f)
+        X, y, df, dates = table_data(table_name, target, station)
+        df = df.dropna()
+        df.reset_index(drop=True, inplace=True)
+        df = norm_df(df, scaler)
+        data = ingest(df, target, time_steps)
+        norm_predictions = best_model.predict(data)
+        print("Aplica predicción")
         #norm_predictions = norm_predictions.reshape(-1, 1)
         #predictions = scaler.inverse_transform(norm_predictions)    
         min_val = scaler.data_min_[4]  # Valor mínimo del O3
@@ -456,7 +482,8 @@ def execute_prediction_O3_1hr(stations2forecast):
         # Aplicar la transformación inversa 
         predictions = norm_predictions * (max_val - min_val) + min_val
         ozone_value = round(float(predictions),4)
-
+        if ozone_value <0:
+            ozone_value = 0
         estatus = 0
         if ozone_value <= 51:
             estatus = 1
