@@ -127,5 +127,8 @@ def obtenerUltimasPredic(idStation):
             dicPredVal.append([ultimasPred.loc[pred,"fechaPrediccion"], ultimosRegistros.loc[pred,"O3"],ultimasPred.loc[pred,"valorContaminante"]])
 
             indexPred = indexPred + 1
+        
+        if(indexPred == 10 ):
+            break
 
     return dicPredVal
