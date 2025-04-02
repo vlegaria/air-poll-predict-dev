@@ -468,10 +468,7 @@ def execute_prediction_O3_1hr(stations2forecast):
         # Abrir el archivo .pkl descargado
         with open(local_path, "rb") as f:
             scaler = pickle.load(f)
-        X, y, df, dates = table_data(table_name, target, station)
-        df = df.dropna()
-        df.reset_index(drop=True, inplace=True)
-        df = norm_df(df, scaler)
+        X, y, df, dates = table_data(table_name, target, station, scaler)
         data = ingest(df, target, time_steps)
         norm_predictions = best_model.predict(data)
         print("Aplica predicción")
@@ -521,14 +518,17 @@ def selectTarget(target):
     return pd.read_sql_query(query, engine)
 
 
-def table_data(table_name, target, station):
+def table_data(table_name, target, station, scaler):
     # Crear la conexión
     engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
     esquema = 'public'
     # Recuperar los datos y cargar en un DataFrame
-    table_name = 'apicalidadaire_'+station+'_norm'
+    table_name = 'apicalidadaire_'+station+'_prom_hr'
     query = f"SELECT * FROM {esquema}.{table_name};"
     df = pd.read_sql_query(query, engine)
+    df = df.dropna()
+    df.reset_index(drop=True, inplace=True)
+    df = norm_df(df, scaler)
     dates = df.date
     y = df[target]
     X = df.drop(columns=['idData', 'date', 'year', 'day','minutes', 'SO2', 'contingency'])
