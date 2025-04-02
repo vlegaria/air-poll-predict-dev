@@ -41,11 +41,6 @@ def prediction(idStation, time1hr, idTarget):
         station = station.upper()
         target = selectTarget(idTarget).loc[0, 'Contaminante']
         time_steps = 24
-        table_name = 'apicalidadaire_'+station+'_prom_hr'
-        X, y, df, dates = table_data(table_name, target, station)
-        data = ingest(df, target, time_steps)
-        norm_predictions = best_model.predict(data)
-        print("Aplica predicción")
         artifacts = client.list_artifacts(best_model_run_id, path="artifacts")
         #scaler_dir = 'artifacts/'+station.upper()+'_scaler_'+target+'.pkl'
         scaler_dir = 'artifacts/'+station.upper()+'_scaler.pkl'
@@ -53,6 +48,12 @@ def prediction(idStation, time1hr, idTarget):
         # Abrir el archivo .pkl descargado
         with open(local_path, "rb") as f:
             scaler = pickle.load(f)
+        
+        table_name = 'apicalidadaire_'+station+'_prom_hr'
+        X, y, df, dates = table_data(table_name, target, station, scaler)
+        data = ingest(df, target, time_steps)
+        norm_predictions = best_model.predict(data)
+        print("Aplica predicción")
         #norm_predictions = norm_predictions.reshape(-1, 1)
         #predictions = scaler.inverse_transform(norm_predictions)    
         min_val = scaler.data_min_[4]  # Valor mínimo del O3
