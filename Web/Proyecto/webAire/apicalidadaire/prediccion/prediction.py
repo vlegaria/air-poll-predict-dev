@@ -118,15 +118,21 @@ def obtenerUltimasPredic(idStation):
 
     for pred in range(ultimasPred.shape[0] ):
 
-        print(f'ultimosRegistros.loc[pred,"O3"] is np.nan {ultimosRegistros.loc[pred,"O3"]}, {type(ultimosRegistros.loc[pred,"O3"])}, {ultimosRegistros.loc[pred,"O3"] == np.nan}, {str(ultimosRegistros.loc[pred,"O3"]) == "nan"}')
+        #print(f'ultimosRegistros.loc[pred,"O3"] is np.nan {ultimosRegistros.loc[pred,"O3"]}, {type(ultimosRegistros.loc[pred,"O3"])}, {ultimosRegistros.loc[pred,"O3"] == np.nan}, {str(ultimosRegistros.loc[pred,"O3"]) == "nan"}')
         
-        if(not str(ultimosRegistros.loc[pred,"O3"]) == "nan" and indexPred < 10):
-            
-            print("Agregamos prediccion: " + str(pred))
-            
-            dicPredVal.append([ultimasPred.loc[pred,"fechaPrediccion"], ultimosRegistros.loc[pred,"O3"],ultimasPred.loc[pred,"valorContaminante"]])
+        fechaPred = ultimasPred.loc[pred,"fechaPrediccion"].to_pydatetime()
 
-            indexPred = indexPred + 1
+        valorReg = ultimosRegistros[(ultimosRegistros['hour'] == fechaPred.hour) & (ultimosRegistros['day'] == fechaPred.day)]
+
+        if(valorReg.shape[0] != 0):
+
+            if(not str(valorReg.loc[0,"O3"]) == "nan" and indexPred < 10 ):
+                
+                print("Agregamos prediccion: " + str(pred))
+                
+                dicPredVal.append([ultimasPred.loc[pred,"fechaPrediccion"], valorReg.loc[0,"O3"],ultimasPred.loc[pred,"valorContaminante"]])
+
+                indexPred = indexPred + 1
         
         if(indexPred == 10 ):
             break
