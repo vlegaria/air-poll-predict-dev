@@ -104,11 +104,13 @@ def obtenerUltimasPredic(idStation):
 
     ultimasPred = selectUltimasPredic(idStation)
 
-    print(ultimasPred)
+    #print(ultimasPred)
 
     #Otener los ultimos 20 datos
 
-    ultimosRegistros = selectUltimosDatos(station.lower())
+    dicPredVal = selectUltimosDatos(station.lower(), ultimasPred)
+
+    """
 
     print(ultimosRegistros)
 
@@ -136,5 +138,7 @@ def obtenerUltimasPredic(idStation):
         
         if(indexPred == 10 ):
             break
+"
+""  """
 
     return dicPredVal

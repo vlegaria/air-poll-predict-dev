@@ -149,7 +149,7 @@ def selectUltimasPredic(idstation):
 
     predicciones.dropna()
 
-    fechaObtener = datetime.now()
+    fechaObtener = datetime.now() + timedelta(days=5)
 
     prediccionesPorHora = pd.DataFrame(columns=predicciones.columns)
 
@@ -158,6 +158,8 @@ def selectUltimasPredic(idstation):
     for indPred in range(predicciones.shape[0]):
 
         fechaPred = predicciones.loc[indPred,"fechaPrediccion"].to_pydatetime()
+
+        #print(f'fechaPred: {fechaPred} fechaObtener: {fechaObtener}')
 
         if(not( fechaObtener.hour == fechaPred.hour and fechaObtener.day == fechaPred.day and fechaObtener.month == fechaPred.month and fechaObtener.year == fechaPred.year)):
             horaAgregada = False
@@ -180,11 +182,42 @@ def selectUltimasPredic(idstation):
     return prediccionesPorHora
 
 
-def selectUltimosDatos(station):
+def selectUltimosDatos(station, ultimasPred):
     engine = create_engine(f'postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}')
     esquema = 'public'
     # Recuperar los datos y cargar en un DataFrame
     table_name = f'apicalidadaire_{station}_prom_hr'
-    query = f"SELECT * FROM {esquema}.{table_name} order by \"idData\" desc limit 20;"
+    query = f"SELECT * FROM {esquema}.{table_name} order by \"idData\" desc limit 100;"
     print(query)
-    return pd.read_sql_query(query, engine)
+    registros =  pd.read_sql_query(query, engine)
+
+    indexPred = 0
+
+    dicPredVal = []
+
+    for indPred in range(ultimasPred.shape[0]):
+
+        fechaPred = ultimasPred.loc[indPred,"fechaPrediccion"].to_pydatetime() - timedelta(days=1)
+
+        regDePred = registros[(registros['hour'] == fechaPred.hour) & (registros['day'] == fechaPred.day)]
+
+        #print(regDePred)
+
+        if(regDePred.shape[0] > 0 ):
+
+            #print(regDePred["O3"].to_list()[0])
+
+            if(not str(regDePred["O3"].to_list()[0]) == "nan" and indexPred < 10 ):
+
+                #print("Agregar registro")
+
+                dicPredVal.append([fechaPred.strftime("%Y-%m-%d %H:%M:%S"), regDePred["O3"].to_list()[0],ultimasPred.loc[indPred,"valorContaminante"]])
+
+                indexPred = indexPred + 1
+
+        if(indexPred == 10):
+            break
+
+    print(dicPredVal)
+
+    return dicPredVal
