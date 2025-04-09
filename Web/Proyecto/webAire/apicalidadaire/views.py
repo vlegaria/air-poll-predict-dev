@@ -52,7 +52,7 @@ class ultimaspredicciones(APIView):
 
         print("Ultimas predic de Uiz")
 
-        station = 41
+        station = 27
 
         #Obtener ultimas 10 predicciones disponibles
 
