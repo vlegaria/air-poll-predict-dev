@@ -41,7 +41,7 @@ def norm_df(df, scaler):
 def autoencoder_reconstruction(df, scaler):
     #with zipfile.ZipFile("autoencoder_model.keras.zip", "r") as zip_ref:
     #    zip_ref.extractall("autoencoder_model")
-    print(os.getpwd())
+    print(os.getcwd())
     autoencoder = keras.models.load_model("apicalidadaire/prediccion/utils/autoencoder_model")
     df_scaled, dates = norm_df(df, scaler)
     
