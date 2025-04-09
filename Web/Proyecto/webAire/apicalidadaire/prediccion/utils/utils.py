@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.metrics import make_scorer, mean_squared_error, r2_score, mean_absolute_error
 from datetime import datetime, timedelta
 from tensorflow import keras
-
+import os
 def norm_df(df, scaler):
   #Si son negativos o vacios cambiarlos a nan
   for ind in range(df.shape[0]):
@@ -41,7 +41,8 @@ def norm_df(df, scaler):
 def autoencoder_reconstruction(df, scaler):
     #with zipfile.ZipFile("autoencoder_model.keras.zip", "r") as zip_ref:
     #    zip_ref.extractall("autoencoder_model")
-    autoencoder = keras.models.load_model("autoencoder_model")
+    print(os.getpwd())
+    autoencoder = keras.models.load_model("apicalidadaire/prediccion/utils/autoencoder_model")
     df_scaled, dates = norm_df(df, scaler)
     
     month_hour = df_scaled[["traffic", "month", "hour"]]
