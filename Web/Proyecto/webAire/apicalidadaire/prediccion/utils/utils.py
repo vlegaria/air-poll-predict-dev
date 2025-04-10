@@ -5,8 +5,37 @@ from sqlalchemy import text
 import numpy as np
 from sklearn.metrics import make_scorer, mean_squared_error, r2_score, mean_absolute_error
 from datetime import datetime, timedelta
-from tensorflow import keras
 import os
+import torch
+import torch.nn as nn
+import numpy as np
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+# === Modelo Autoencoder ===
+class Autoencoder(nn.Module):
+    def __init__(self, input_dim):
+        super(Autoencoder, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, 8),
+            nn.ReLU()
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(8, 32),
+            nn.ReLU(),
+            nn.Linear(32, 64),
+            nn.ReLU(),
+            nn.Linear(64, input_dim)
+        )
+
+    def forward(self, x):
+        encoded = self.encoder(x)
+        decoded = self.decoder(encoded)
+        return decoded
+    
 def norm_df(df, scaler):
   #Si son negativos o vacios cambiarlos a nan
   for ind in range(df.shape[0]):
@@ -17,52 +46,58 @@ def norm_df(df, scaler):
 
               if(df.loc[ind, dato] == ""):
                   df.loc[ind, dato] = np.nan
-
-  df["datetime"] = df["date"].astype(str) + " " + df["hour"].astype(str) +":00:00"
-  df["datetime"] = pd.to_datetime(df["datetime"], format='%Y-%m-%d %H:%M:%S')
-  dates = df["datetime"]
-  df = df.drop_duplicates(subset='datetime', keep='first')
   month_idx= {12:4, 11:2, 10:1, 9:7, 8:6, 7:5, 6:9, 5:11, 4:10, 3:8, 2:12, 1:3}
   df["month_idx"] = df["month"].map(month_idx)
 
   hour_idx= {7:0, 6:1, 8:2, 5:3, 4:4, 9:5, 3:6, 2:7, 1:8, 0:9, 23:10, 22:11, 10:12, 21:13, 20:14, 19:15, 11:16, 18:17, 12:18, 17:19, 16:20, 13:21, 15:22, 14:23 }
   df["hour_idx"] = df["hour"].map(hour_idx)
-  df = df.drop(columns=['month', 'hour', 'datetime'])
+  df = df.drop(columns=['month', 'hour',])
   df = df.rename(columns={'hour_idx': 'hour', 'month_idx':'month' })
   df_norm_data_escalada = df.copy()
   #Obtener los nuevos valores escalados
-  
-  #scaler = MinMaxScaler()
   # Normalizar
   df_norm_data_escalada[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP", "month", "hour"]] = scaler.transform(df[["CO", "NO", "NOX", "NO2", "O3", "PM10", "PM25", "RH", "SO2", "TMP", "WDR", "WSP","month", "hour"]])
   df_norm_data_escalada[['CO', 'NO', 'NOX', 'NO2', 'O3', 'PM10', 'PM25', 'RH', 'SO2','TMP', 'WDR', 'WSP', "month", "hour"]] = df_norm_data_escalada[['CO', 'NO', 'NOX', 'NO2', 'O3', 'PM10', 'PM25', 'RH', 'SO2','TMP', 'WDR', 'WSP', "month", "hour"]].round(12)
-  return df_norm_data_escalada, dates
+  return df_norm_data_escalada
 
-def autoencoder_reconstruction(df, scaler):
+def autoencoder_reconstruction(df, station):
     #with zipfile.ZipFile("autoencoder_model.keras.zip", "r") as zip_ref:
     #    zip_ref.extractall("autoencoder_model")
     print(os.getcwd())
-    autoencoder = keras.models.load_model("apicalidadaire/prediccion/utils/autoencoder_model")
-    df_scaled, dates = norm_df(df, scaler)
-    
-    month_hour = df_scaled[["traffic", "month", "hour"]]
-    df_scaled = df_scaled.drop(columns=['idData', 'date', 'year', 'day','minutes', 'contingency', "traffic", "month", "hour"])
+    df["datetime"] = df["date"].astype(str) + " " + df["hour"].astype(str) +":00:00"
+    df["datetime"] = pd.to_datetime(df["datetime"], format='%Y-%m-%d %H:%M:%S')
+    dates = df["datetime"]
+    df = df.drop_duplicates(subset='datetime', keep='first')
+    month_hour = df[["traffic", "month", "hour"]]
+    df = df.drop(columns=['idData', 'datetime', 'date', 'year', 'day','minutes', 'contingency', "traffic", "month", "hour"])
         
     # Crear la máscara de NaNs con las columnas ya limpias
-    nan_mask = df_scaled.isna().values
+    nan_mask = df.isna().values
     # Reemplazar NaNs con 0 solo en las columnas que se usan
-    df_filled = df_scaled.fillna(0)
+    df_filled = df.fillna(0)
+    X_np = df_filled.values
+    # Luego lo conviertes a tensor float (usualmente se usa float32)
+    X_tensor = torch.tensor(X_np, dtype=torch.float32)
 
     # Reconstrucción
-    reconstructed_data = autoencoder.predict(df_filled)
+    model = Autoencoder(12)  # Asegúrate de definir la clase antes
+    if station =="UIZ":
+        dir_encoder = "apicalidadaire/prediccion/utils/autoencoder_pytorchUIZ.pth"
+    if station =="MER":
+        dir_encoder = "apicalidadaire/prediccion/utils/autoencoder_pytorchMER.pth"
+        
+    model.load_state_dict(torch.load(dir_encoder, map_location=torch.device('cpu')))
+    model.eval()
+    with torch.no_grad():
+        reconstructed_data = model(X_tensor).cpu().numpy()
     #return df_filled, reconstructed_data
     # Copiar los datos originales (ya normalizados con 0s)
-    data_recon = df_filled.copy().values
+    data_recon = df.copy().values
     # Reemplazar solo donde había NaNs
     data_recon[nan_mask] = reconstructed_data[nan_mask]
 
     # Opcional: convertir a DataFrame
-    df_recon = pd.DataFrame(data_recon, columns=df_scaled.columns)
+    df_recon = pd.DataFrame(data_recon, columns=df.columns)
     df_recon = pd.concat([df_recon, month_hour], axis=1)
     df_recon = df_recon.clip(lower=0)
     return df_recon, dates
@@ -80,7 +115,8 @@ def table_data(table_name, target, station, scaler):
     #df.reset_index(drop=True, inplace=True)
     #df = norm_df(df, scaler)
     #dates = df.date
-    df, dates = autoencoder_reconstruction(df, scaler)
+    df, dates = autoencoder_reconstruction(df, station)
+    df = norm_df(df, scaler)
     y = df[target]
     #X = df.drop(columns=['idData', 'date', 'year', 'day','minutes', 'SO2', 'contingency'])
     X = df.drop(columns=['SO2', target])
