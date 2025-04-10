@@ -126,8 +126,8 @@ def ingest(df, target, time_steps):
     df = df.dropna()
     df = df.tail(time_steps)
     #X = df.drop(columns=['idData', 'date', 'year', 'day', 'minutes', 'SO2', 'contingency'])
-    X = X.drop(columns=[target])
-    array = X.to_numpy()
+    #X = X.drop(columns=[target])
+    array = df.to_numpy()
     vector = array.flatten()
     return np.array([vector])
 

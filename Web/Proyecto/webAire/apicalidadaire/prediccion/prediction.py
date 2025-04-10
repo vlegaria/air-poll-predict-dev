@@ -51,7 +51,7 @@ def prediction(idStation, time1hr, idTarget):
         
         table_name = 'apicalidadaire_'+station+'_prom_hr'
         X, y, df, dates = table_data(table_name, target, station, scaler)
-        data = ingest(df, target, time_steps)
+        data = ingest(X, target, time_steps)
         norm_predictions = best_model.predict(data)
         print("Aplica predicción")
         #norm_predictions = norm_predictions.reshape(-1, 1)
