@@ -82,9 +82,9 @@ def autoencoder_reconstruction(df, station):
     # Reconstrucción
     model = Autoencoder(12)  # Asegúrate de definir la clase antes
     if station =="UIZ":
-        dir_encoder = "apicalidadaire/prediccion/utils/autoencoder_pytorchUIZ.pth"
+        dir_encoder = "/home/sistema/www/air-poll-predict-dev/Web/Proyecto/webAire/apicalidadaire/prediccion/utils/autoencoder_pytorchUIZ.pth"
     if station =="MER":
-        dir_encoder = "apicalidadaire/prediccion/utils/autoencoder_pytorchMER.pth"
+        dir_encoder = "/home/sistema/www/air-poll-predict-dev/Web/Proyecto/webAire/apicalidadaire/prediccion/utils/autoencoder_pytorchMER.pth"
         
     model.load_state_dict(torch.load(dir_encoder, map_location=torch.device('cpu')))
     model.eval()
